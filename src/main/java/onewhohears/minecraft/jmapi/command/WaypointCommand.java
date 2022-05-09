@@ -1,0 +1,339 @@
+package onewhohears.minecraft.jmapi.command;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
+
+import cpw.mods.fml.common.network.internal.FMLProxyPacket;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.Unpooled;
+import journeymap.client.model.Waypoint;
+import journeymap.client.waypoint.WaypointStore;
+import net.minecraft.client.Minecraft;
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatStyle;
+import net.minecraft.util.EnumChatFormatting;
+import onewhohears.minecraft.jmapi.JourneyMapApiMod;
+import onewhohears.minecraft.jmapi.events.WaypointChatKeys;
+
+@SideOnly(Side.CLIENT)
+public class WaypointCommand extends CommandBase {
+	
+	private String cmdName = "waypoint";
+	
+	@Override
+	public String getCommandName() {
+		return cmdName;
+	}
+	
+	@Override
+	public String getCommandUsage(ICommandSender sender) {
+		return "/"+cmdName+" cleardeath/remove/share/disableautoclick";
+	}
+	
+	@Override
+    public boolean canCommandSenderUseCommand(ICommandSender sender) {
+    	return true;
+    } 
+	
+	@SuppressWarnings("rawtypes")
+	@Override
+	public List addTabCompletionOptions(ICommandSender sender, String[] args) {
+		if (args.length == 1) {
+			return CommandBase.getListOfStringsMatchingLastWord(args, new String[] 
+					 {"cleardeath", "remove", "share", "disableautoclick"}); 
+		} else if (args.length == 2) {
+			if (args[0].equals("remove") || args[0].equals("share")) {
+				return CommandBase.getListOfStringsMatchingLastWord(args, getWaypointNames()); 
+			} else if (args[0].equals("disableautoclick")) {
+				return CommandBase.getListOfStringsMatchingLastWord(args, new String[] {"true", "false"}); 
+			}
+		} else if (args.length >= 3 && args[0].equals("share") && args[1].charAt(0) == '"') {
+			int l = args.length;
+			return CommandBase.getListOfStringsMatchingLastWord(args, getWaypointNameOptions(args[l-2], l-3));
+		} else if (args.length == 3) {
+			if (args[0].equals("share")) {
+				return CommandBase.getListOfStringsMatchingLastWord(args, MinecraftServer.getServer().getAllUsernames()); 
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public void processCommand(ICommandSender sender, String[] args) {
+		if (args[0].equals("cleardeath")) {
+			if (args.length == 1) {
+				Waypoint[] waypoints = WaypointStore.instance().getAll()
+						.toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
+				int d = 0;
+				for (int i = 0; i < waypoints.length; ++i) {
+					if (waypoints[i].isDeathPoint()) {
+						WaypointStore.instance().remove(waypoints[i]);
+						++d;
+					}
+				}
+				sendMessage(d+" Deathpoints were Removed!");
+			} else if (args.length == 2) {
+				int num = -1;
+				try { num = Integer.parseInt(args[1]); } 
+				catch (NumberFormatException e) {
+					sendError(args[1]+" is not a number.");
+					return;
+				}
+				Waypoint[] waypoints = WaypointStore.instance().getAll()
+						.toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
+				ArrayList<Waypoint> deathPoints = getSortedDeathPointsByTime(waypoints);
+				int d = 0;
+				for (int i = 0; i < deathPoints.size()-num; ++i) {
+					WaypointStore.instance().remove(deathPoints.get(i));
+					++d;
+				}
+				sendMessage(d+" Deathpoints were Removed!");
+			} else sendError("Invalid Command");
+		} else if (args[0].equals("remove") && args.length >= 2) {
+			String name = args[1];
+			int l = args.length;
+			if (l > 2) {
+				if (args[1].charAt(0) == '"' && args[l-1].charAt(args[l-1].length()-1) == '"') {
+					for (int i = 2; i < l; ++i) name += " " + args[i];
+				} else {
+					sendError("Error: Removing Waypoints with spaces in their names require quotes!");
+					return;
+				}
+			}
+			int d = deleteWaypointsWithSameName(removeQuotes(name));
+			if (d > 0) sendMessage(d+" Waypoints named "+args[1]+" were removed!");
+			else sendMessage("There wasn't any Waypoints named "+args[1]+" to be removed!");
+		} else if (args[0].equals("disableautoclick") && args.length == 2) {
+			if (args[1].equals("true")) {
+				Minecraft.getMinecraft().thePlayer.getEntityData().setBoolean(WaypointChatKeys.getNoAutoKey(), true);
+				sendMessage("Waypoints in chat will NOT be clicked on!");
+			} else if (args[1].equals("false")) {
+				Minecraft.getMinecraft().thePlayer.getEntityData().setBoolean(WaypointChatKeys.getNoAutoKey(), false);
+				sendMessage("Waypoints in chat will automatically be clicked on!");
+			} else sendError("You must input true or false!");
+		} else if (args[0].equals("share")) {
+			int dimension = Minecraft.getMinecraft().thePlayer.dimension;
+			String displayName = Minecraft.getMinecraft().thePlayer.getDisplayName();
+			if (args.length == 2) {
+				Waypoint waypoint = getWaypointByName(args[1]);
+				FMLProxyPacket packet = createWaypointPacket(waypoint, dimension, displayName);
+				if (packet != null) {
+					JourneyMapApiMod.Channel.sendToServer(packet);
+					sendMessage("Waypoint Sent!");
+				}
+				else sendError("Failed to find Waypoint");
+			} else if (args.length >= 3) {
+				String name = args[1], playerName = null;
+				if (args.length == 3 && args[1].charAt(0) != '"') {
+					name = args[1]; playerName = args[2];
+				} else if (args[1].charAt(0) == '"') {
+					name += args[1] + " ";
+					boolean closed = false;
+					for (int i = 2; i < args.length; ++i) {
+						if (args[i].charAt(args[i].length()-1) == '"') {
+							closed = true;
+							name += args[i];
+							if (i == args.length-2) playerName = args[i+1];
+							else if (i < args.length-2) sendMessage("Warning: Possibly unsupported use of quotes. Also will not send to more than one player.");
+							break;
+						} else name += args[i] + " ";
+					}
+					if (!closed) {
+						sendError("Error: Likely Didn't Close Quotes");
+						return;
+					}
+				} else {
+					sendError("Error: Sharing Waypoints with spaces in their names require quotes!");
+					return;
+				}
+				Waypoint waypoint = getWaypointByName(name);
+				FMLProxyPacket packet = null;
+				if (playerName == null) packet = createWaypointPacket(waypoint, dimension, displayName);
+				else                    packet = createWaypointPacket(waypoint, dimension, displayName, playerName);
+				if (packet != null) {
+					JourneyMapApiMod.Channel.sendToServer(packet);
+					sendMessage("Waypoint Sent!");
+				}
+				else sendError("Failed to find Waypoint");
+			} else sendError("Invalid Command");
+		} else sendError("Invalid Command");
+	}
+	
+	private String pattern = "h:m:s a M/d/yy";
+	private DateTimeFormatter format = DateTimeFormatter.ofPattern(pattern) ;
+	
+	private ArrayList<Waypoint> getSortedDeathPointsByTime(Waypoint[] waypoints) {
+		ArrayList<Waypoint> deaths = new ArrayList<Waypoint>();
+		ArrayList<LocalDateTime> times = new ArrayList<LocalDateTime>();
+		for (int i = 0; i < waypoints.length; ++i) {
+			if (waypoints[i].isDeathPoint()) {
+				String time = waypoints[i].getName().substring(6);
+				try {
+					LocalDateTime d = LocalDateTime.parse(time, format);
+					times.add(d);
+					deaths.add(waypoints[i]);
+				} catch (DateTimeParseException e) {
+					System.out.println("The name of death point \""+time+"\" is not formatted correctly");
+				}
+			}
+		}
+		int n = deaths.size();
+		for (int i = 0; i < n-1; i++) {
+			for (int j = 0; j < n-i-1; j++) {
+				if (times.get(j).isAfter(times.get(j+1))) {
+					LocalDateTime t1 = times.get(j);
+					times.set(j, times.get(j+1));
+					times.set(j+1, t1);
+					Waypoint t2 = deaths.get(j);
+					deaths.set(j, deaths.get(j+1));
+					deaths.set(j+1, t2);
+				}
+			}
+		}
+		return deaths;
+	}
+	
+	private int deleteWaypointsWithSameName(String name) {
+		name = removeQuotes(name);
+		Waypoint[] waypoints = WaypointStore.instance().getAll()
+				.toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
+		int deleted = 0;
+		for (int i = 0; i < waypoints.length; ++i) {
+			if (waypoints[i].getName().equals(name)) {
+				WaypointStore.instance().remove(waypoints[i]);
+				++deleted;
+			}
+		}
+		return deleted;
+	}
+	
+	private String removeQuotes(String name) {
+		if (name.charAt(0) == '"' && name.charAt(name.length()-1) == '"') {
+			//name = name.replace('_', ' ');
+			return name.substring(1, name.length()-1);
+		}
+		return name;
+	}
+	
+	private String[] getWaypointNames() {
+		Waypoint[] waypoints = WaypointStore.instance().getAll()
+				.toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
+		ArrayList<String> n = new ArrayList<String>();
+		for (int i = 0; i < waypoints.length; ++i) {
+			if (!n.contains(waypoints[i].getName())) n.add(waypoints[i].getName());
+		}
+		String[] names = n.toArray(new String[n.size()]);
+		for (int i = 0; i < names.length; ++i) if (names[1].contains(" ")) names[i] = names[i].substring(0, names[i].indexOf(' '));
+		return names;
+	}
+	
+	private String[] getWaypointNameOptions(String namePart, int index) {
+		if (namePart.charAt(namePart.length()-1) == '"') return MinecraftServer.getServer().getAllUsernames();
+		Waypoint[] waypoints = WaypointStore.instance().getAll()
+				.toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
+		ArrayList<String> n = new ArrayList<String>();
+		for (int i = 0; i < waypoints.length; ++i) {
+			if (!n.contains(waypoints[i].getName())) n.add(waypoints[i].getName());
+		}
+		ArrayList<String> n2 = new ArrayList<String>();
+		for (int i = 0; i < n.size(); ++i) {
+			String[] parts = n.get(i).split(" ");
+			if (parts.length > index+1) {
+				String p = null;
+				if (index == 0 && ('"'+parts[index]).equals(namePart)) p = parts[index+1];
+				else if (parts[index].equals(namePart)) p = parts[index+1];
+				if (p != null) {
+					if (index+1 == parts.length-1) p += '"';
+					n2.add(p);
+				}
+			}
+		}
+		String[] names = n.toArray(new String[n2.size()]);
+		return names;
+	}
+	
+	private FMLProxyPacket createWaypointPacket(Waypoint waypoint, int dimension, String playerName) {
+		if (waypoint == null) return null;
+		ByteBufOutputStream bbos = new ByteBufOutputStream(Unpooled.buffer());
+		FMLProxyPacket thePacket = null;
+		try {
+			bbos.writeInt(0); //type
+			bbos.writeInt(waypoint.getX()); //x
+			bbos.writeInt(waypoint.getY()); //y
+			bbos.writeInt(waypoint.getZ()); //z
+			bbos.writeInt(dimension); //dimension
+			bbos.writeInt(waypoint.getColor()); //color
+			bbos.writeUTF(waypoint.getName()); //name
+			bbos.writeUTF(playerName); // player name
+			bbos.writeBoolean(false);
+			thePacket = new FMLProxyPacket(bbos.buffer(), "JMA_Server");
+			bbos.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return thePacket;
+	}
+	
+	private FMLProxyPacket createWaypointPacket(Waypoint waypoint, int dim, String pName, String otherName) {
+		if (waypoint == null) return null;
+		ByteBufOutputStream bbos = new ByteBufOutputStream(Unpooled.buffer());
+		FMLProxyPacket thePacket = null;
+		try {
+			bbos.writeInt(1); //type
+			bbos.writeUTF(otherName); // other player name
+			bbos.writeInt(waypoint.getX()); //x
+			bbos.writeInt(waypoint.getY()); //y
+			bbos.writeInt(waypoint.getZ()); //z
+			bbos.writeInt(dim); //dimension
+			bbos.writeInt(waypoint.getColor()); //color
+			bbos.writeUTF(waypoint.getName()); //name
+			bbos.writeUTF(pName); // player name
+			bbos.writeBoolean(false);
+			thePacket = new FMLProxyPacket(bbos.buffer(), "JMA_Server");
+			bbos.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return thePacket;
+	}
+	
+	private Waypoint getWaypointByName(String name) {
+		name = removeQuotes(name);
+		Waypoint[] waypoints = WaypointStore.instance().getAll()
+				.toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
+		for (int i = 0; i < waypoints.length; ++i) {
+			if (waypoints[i].getName().equals(name)) {
+				return waypoints[i];
+			}
+		}
+		return null;
+	}
+	
+	private void sendMessage(String message) {
+		ChatComponentText chat = new ChatComponentText(message);
+		ChatStyle style = new ChatStyle();
+		style.setColor(EnumChatFormatting.YELLOW);
+		chat.setChatStyle(style);
+		Minecraft.getMinecraft().thePlayer.addChatMessage(chat);
+	}
+	
+	private void sendError(String message) {
+		ChatComponentText chat = new ChatComponentText(message);
+		ChatStyle style = new ChatStyle();
+		style.setColor(EnumChatFormatting.RED);
+		chat.setChatStyle(style);
+		Minecraft.getMinecraft().thePlayer.addChatMessage(chat);
+	}
+	
+}

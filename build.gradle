@@ -1,0 +1,56 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url = "https://jcenter.bintray.com/" }
+        maven {
+            name = "forge"
+            url = "https://files.minecraftforge.net/maven"
+        }
+        maven {
+            name = "sonatype"
+            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+    }
+    dependencies {
+        classpath ('com.anatawa12.forge:ForgeGradle:1.2-1.0.+') {
+            changing = true
+        }
+    }
+}
+
+apply plugin: 'forge'
+
+version = "0.8.1"
+group= "com.onewhohears.journeymap_api_1.7.10" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "JourneyMapApi_1.7.10"
+
+minecraft {
+    version = "1.7.10-10.13.4.1614-1.7.10"
+    runDir = "eclipse"
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    // you may put jars on which you depend on in ./libs
+    // or you may define them like so..
+    //compile "some.group:artifact:version:classifier"
+    //compile "some.group:artifact:version"
+      
+    // real examples
+    //compile 'com.mod-buildcraft:buildcraft:6.0.8:dev'  // adds buildcraft to the dev env
+    //compile 'com.googlecode.efficient-java-matrix-library:ejml:0.24' // adds ejml to the dev env
+
+    // for more info...
+    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
+    // http://www.gradle.org/docs/current/userguide/dependency_management.html
+	
+	// https://mvnrepository.com/artifact/org.json/json
+	//implementation group: 'org.json', name: 'json', version: '20210307'
+	
+	//journeymap
+	//implementation files('C:\Users\1whoh\Files\Creative\Minecrap\ExtraMods\1.7.10\journeymap-1.7.10-5.1.4p2-unlimited.jar');
+	//implementation files('libs/journeymap-1.7.10-5.1.4p2-unlimited.jar');
+	//compile files('libs/journeymap-1.7.10-5.1.4p2-unlimited.jar')
+}
