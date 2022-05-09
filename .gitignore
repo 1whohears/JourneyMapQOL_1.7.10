@@ -1,3 +1,7 @@
+# other
+**/libs/
+**/bin/
+
 .gradle
 **/build/
 !src/**/build/
@@ -17,7 +21,3 @@ gradle-app.setting
 **/.settings/
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
-
-# other
-**/libs/
-**/bin/
