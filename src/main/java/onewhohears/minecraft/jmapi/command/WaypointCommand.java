@@ -56,9 +56,9 @@ public class WaypointCommand extends CommandBase {
 			} else if (args[0].equals("disableautoclick")) {
 				return CommandBase.getListOfStringsMatchingLastWord(args, new String[] {"true", "false"}); 
 			}
-		} else if (args.length >= 3 && args[0].equals("share") && args[1].charAt(0) == '"') {
+		} else if (args.length >= 3 && (args[0].equals("share") || args[0].equals("remove")) && args[1].charAt(0) == '"') {
 			int l = args.length;
-			return CommandBase.getListOfStringsMatchingLastWord(args, getWaypointNameOptions(args[l-2], l-3));
+			return CommandBase.getListOfStringsMatchingLastWord(args, getWaypointNameOptions(args[l-2], l-3, args[0].equals("share")));
 		} else if (args.length == 3) {
 			if (args[0].equals("share")) {
 				return CommandBase.getListOfStringsMatchingLastWord(args, MinecraftServer.getServer().getAllUsernames()); 
@@ -109,8 +109,8 @@ public class WaypointCommand extends CommandBase {
 					return;
 				}
 			}
-			int d = deleteWaypointsWithSameName(removeQuotes(name));
-			if (d > 0) sendMessage(d+" Waypoints named "+args[1]+" were removed!");
+			int d = deleteWaypointsWithSameName(name);
+			if (d > 0) sendMessage(d+" Waypoints named "+removeQuotes(name)+" were removed!");
 			else sendMessage("There wasn't any Waypoints named "+args[1]+" to be removed!");
 		} else if (args[0].equals("disableautoclick") && args.length == 2) {
 			if (args[1].equals("true")) {
@@ -123,7 +123,8 @@ public class WaypointCommand extends CommandBase {
 		} else if (args[0].equals("share")) {
 			int dimension = Minecraft.getMinecraft().thePlayer.dimension;
 			String displayName = Minecraft.getMinecraft().thePlayer.getDisplayName();
-			if (args.length == 2) {
+			int l = args.length;
+			if (l == 2) {
 				Waypoint waypoint = getWaypointByName(args[1]);
 				FMLProxyPacket packet = createWaypointPacket(waypoint, dimension, displayName);
 				if (packet != null) {
@@ -131,24 +132,18 @@ public class WaypointCommand extends CommandBase {
 					sendMessage("Waypoint Sent!");
 				}
 				else sendError("Failed to find Waypoint");
-			} else if (args.length >= 3) {
+			} else if (l >= 3) {
 				String name = args[1], playerName = null;
-				if (args.length == 3 && args[1].charAt(0) != '"') {
+				if (l == 3 && args[1].charAt(0) != '"') {
 					name = args[1]; playerName = args[2];
 				} else if (args[1].charAt(0) == '"') {
-					name += args[1] + " ";
-					boolean closed = false;
-					for (int i = 2; i < args.length; ++i) {
-						if (args[i].charAt(args[i].length()-1) == '"') {
-							closed = true;
-							name += args[i];
-							if (i == args.length-2) playerName = args[i+1];
-							else if (i < args.length-2) sendMessage("Warning: Possibly unsupported use of quotes. Also will not send to more than one player.");
-							break;
-						} else name += args[i] + " ";
-					}
-					if (!closed) {
-						sendError("Error: Likely Didn't Close Quotes");
+					if (args[l-1].charAt(args[l-1].length()-1) == '"') {
+						for (int i = 2; i < l; ++i) name += " " + args[i];
+					} else if (args[1].charAt(0) == '"' && args[l-2].charAt(args[l-2].length()-1) == '"') {
+						for (int i = 2; i < l-1; ++i) name += " " + args[i];
+						playerName = args[l-1];
+					} else {
+						sendError("Error: Sharing Waypoints with spaces in their names require quotes!");
 						return;
 					}
 				} else {
@@ -232,12 +227,12 @@ public class WaypointCommand extends CommandBase {
 			if (!n.contains(waypoints[i].getName())) n.add(waypoints[i].getName());
 		}
 		String[] names = n.toArray(new String[n.size()]);
-		for (int i = 0; i < names.length; ++i) if (names[1].contains(" ")) names[i] = names[i].substring(0, names[i].indexOf(' '));
+		for (int i = 0; i < names.length; ++i) if (names[i].contains(" ")) names[i] = '"'+names[i].substring(0, names[i].indexOf(" "));
 		return names;
 	}
 	
-	private String[] getWaypointNameOptions(String namePart, int index) {
-		if (namePart.charAt(namePart.length()-1) == '"') return MinecraftServer.getServer().getAllUsernames();
+	private String[] getWaypointNameOptions(String namePart, int index, boolean includePlayers) {
+		if (includePlayers && namePart.charAt(namePart.length()-1) == '"') return MinecraftServer.getServer().getAllUsernames();
 		Waypoint[] waypoints = WaypointStore.instance().getAll()
 				.toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
 		ArrayList<String> n = new ArrayList<String>();
@@ -257,7 +252,7 @@ public class WaypointCommand extends CommandBase {
 				}
 			}
 		}
-		String[] names = n.toArray(new String[n2.size()]);
+		String[] names = n2.toArray(new String[n2.size()]);
 		return names;
 	}
 	

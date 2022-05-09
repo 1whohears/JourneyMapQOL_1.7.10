@@ -13,8 +13,8 @@ public class WaypointChatClickEvent extends ClickEvent {
 	private boolean delete;
 	
 	@SideOnly(Side.CLIENT)
-	public WaypointChatClickEvent(Action p_i45156_1_, String p_i45156_2_, Waypoint waypoint, boolean delete) {
-		super(p_i45156_1_, p_i45156_2_);
+	public WaypointChatClickEvent(Action action, String value, Waypoint waypoint, boolean delete) {
+		super(null, "");
 		this.waypoint = waypoint;
 		ran = false;
 		this.delete = delete;
@@ -26,7 +26,7 @@ public class WaypointChatClickEvent extends ClickEvent {
 			createWayPoint();
 			ran = true;
 		}
-		return null;
+		return Action.OPEN_FILE;
 	}
 	
 	private void createWayPoint() {

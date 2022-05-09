@@ -40,6 +40,7 @@ public class ClientPacketHandler extends ServerPacketHandler {
 					String name = bbis.readUTF();
 					String pName = bbis.readUTF();
 					boolean delete = bbis.readBoolean();
+					if (Minecraft.getMinecraft().thePlayer.getDisplayName().equals(pName)) break;
 					Waypoint waypoint = new Waypoint(name, x, y, z, Color.YELLOW, Type.Normal, dim);
 					waypoint.setColor(color);
 					ChatComponentText chat = new ChatComponentText("Waypoint "+name+" shared by "+pName);
@@ -72,9 +73,9 @@ public class ClientPacketHandler extends ServerPacketHandler {
 						Minecraft.getMinecraft().thePlayer.addChatComponentMessage(chat);
 						if (autoCreate) createWayPoint(waypoint, delete);
 					}
-					break;
 				}
 			}
+			bbis.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

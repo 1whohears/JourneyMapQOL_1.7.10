@@ -27,6 +27,7 @@ public class WaypointChatEvent {
 		String[] groups = getGroupsOfSquareBrackets(text);
 		boolean cancel = false;
 		for (int i = 0; i < groups.length; ++i) if (processGroup(groups[i])) cancel = true;
+		// TODO don't cancel if there is text other than waypoint stuff
 		event.setCanceled(cancel);
 		//if there are no groups of square brackets then might click event maybe auto waypoint 
 		if (groups.length == 0) {
