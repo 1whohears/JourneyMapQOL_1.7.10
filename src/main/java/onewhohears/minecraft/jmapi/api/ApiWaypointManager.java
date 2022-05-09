@@ -60,7 +60,6 @@ public class ApiWaypointManager {
 	 */
 	public boolean shareAllPlayersWaypoint(int x, int y, int z, int dimension, int color, String waypointName, String senderName) {
 		Waypoint waypoint = new Waypoint(waypointName, x, y, z, Color.YELLOW, Type.Normal, dimension);
-		if (waypoint == null) return false;
 		waypoint.setColor(color);
 		FMLProxyPacket packet = createWaypointPacket(waypoint, dimension, false, senderName);
 		if (packet == null) return false;
@@ -82,7 +81,6 @@ public class ApiWaypointManager {
 	 */
 	public boolean shareAllPlayersWaypoint(int x, int y, int z, int dimension, int color, boolean delete, String waypointName, String senderName) {
 		Waypoint waypoint = new Waypoint(waypointName, x, y, z, Color.YELLOW, Type.Normal, dimension);
-		if (waypoint == null) return false;
 		waypoint.setColor(color);
 		FMLProxyPacket packet = createWaypointPacket(waypoint, dimension, delete, senderName);
 		if (packet == null) return false;
@@ -135,7 +133,6 @@ public class ApiWaypointManager {
 	 */
 	public boolean shareWaypointToPlayer(int x, int y, int z, int dimension, int color, String waypointName, String senderName, String recieverName) {
 		Waypoint waypoint = new Waypoint(waypointName, x, y, z, Color.YELLOW, Type.Normal, dimension);
-		if (waypoint == null) return false;
 		waypoint.setColor(color);
 		FMLProxyPacket packet = createWaypointPacket(waypoint, dimension, false, senderName, recieverName);
 		if (packet == null) return false;
@@ -158,7 +155,6 @@ public class ApiWaypointManager {
 	 */
 	public boolean shareWaypointToPlayer(int x, int y, int z, int dimension, int color, boolean delete, String waypointName, String senderName, String recieverName) {
 		Waypoint waypoint = new Waypoint(waypointName, x, y, z, Color.YELLOW, Type.Normal, dimension);
-		if (waypoint == null) return false;
 		waypoint.setColor(color);
 		FMLProxyPacket packet = createWaypointPacket(waypoint, dimension, delete, senderName, recieverName);
 		if (packet == null) return false;
