@@ -22,7 +22,7 @@ apply plugin: 'forge'
 
 version = "0.8.1"
 group= "com.onewhohears.journeymap_api_1.7.10" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "JourneyMapApi_1.7.10"
+archivesBaseName = "JourneyMapQol_1.7.10"
 
 minecraft {
     version = "1.7.10-10.13.4.1614-1.7.10"
