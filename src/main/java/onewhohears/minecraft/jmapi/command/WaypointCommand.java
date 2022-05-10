@@ -7,6 +7,8 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mojang.realmsclient.dto.PlayerInfo;
+
 import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -15,9 +17,9 @@ import io.netty.buffer.Unpooled;
 import journeymap.client.model.Waypoint;
 import journeymap.client.waypoint.WaypointStore;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiPlayerInfo;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
@@ -61,10 +63,20 @@ public class WaypointCommand extends CommandBase {
 			return CommandBase.getListOfStringsMatchingLastWord(args, getWaypointNameOptions(args[l-2], l-3, args[0].equals("share")));
 		} else if (args.length == 3) {
 			if (args[0].equals("share")) {
-				return CommandBase.getListOfStringsMatchingLastWord(args, MinecraftServer.getServer().getAllUsernames()); 
+				return CommandBase.getListOfStringsMatchingLastWord(args, getUsernames()); 
 			}
 		}
 		return null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private String[] getUsernames() {
+		if (Minecraft.getMinecraft().getNetHandler() == null) return new String[0];
+		if (Minecraft.getMinecraft().getNetHandler().playerInfoList == null) return new String[0];
+		List<GuiPlayerInfo> playerInfo = Minecraft.getMinecraft().getNetHandler().playerInfoList;
+		String[] names = new String[playerInfo.size()];
+		for (int i = 0; i < names.length; ++i) names[i] = playerInfo.get(i).name;
+		return names;
 	}
 
 	@Override
@@ -232,7 +244,7 @@ public class WaypointCommand extends CommandBase {
 	}
 	
 	private String[] getWaypointNameOptions(String namePart, int index, boolean includePlayers) {
-		if (includePlayers && namePart.charAt(namePart.length()-1) == '"') return MinecraftServer.getServer().getAllUsernames();
+		if (includePlayers && namePart.charAt(namePart.length()-1) == '"') return getUsernames();
 		Waypoint[] waypoints = WaypointStore.instance().getAll()
 				.toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
 		ArrayList<String> n = new ArrayList<String>();

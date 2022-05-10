@@ -24,12 +24,19 @@ public class WaypointChatEvent {
 	public void chatReceived(ClientChatReceivedEvent event) {
 		autoCreate = !Minecraft.getMinecraft().thePlayer.getEntityData().getBoolean(WaypointChatKeys.getNoAutoKey());
 		String text = event.message.getUnformattedText();
+		int index = text.indexOf('>')+1;
+		String name = text.substring(0, index);
+		text = text.substring(index);
 		String[] groups = getGroupsOfSquareBrackets(text);
 		boolean cancel = false;
-		for (int i = 0; i < groups.length; ++i) if (processGroup(groups[i])) cancel = true;
-		// TODO don't cancel if there is text other than waypoint stuff
-		event.setCanceled(cancel);
-		//if there are no groups of square brackets then might click event maybe auto waypoint 
+		for (int i = 0; i < groups.length; ++i) if (processGroup(groups[i])) {
+			cancel = true;
+			text = text.replaceFirst(groups[i], "");
+		}
+		if (cancel) { 
+			if (isBlank(text)) event.setCanceled(true);
+			else event.message = new ChatComponentText(name+text);
+		}
 		if (groups.length == 0) {
 			ChatStyle style = event.message.getChatStyle();
 			if (style != null && style.getChatClickEvent() != null) {
@@ -39,6 +46,13 @@ public class WaypointChatEvent {
 				}
 			}
 		}
+	}
+	
+	private boolean isBlank(String s) {
+		for (int i = 0; i < s.length(); ++i) {
+			if (s.charAt(i) != ' ' && s.charAt(i) != '[' && s.charAt(i) != ']') return false;
+		}
+		return true;
 	}
 	
 	private String[] getGroupsOfSquareBrackets(String text) {
