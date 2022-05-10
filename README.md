@@ -39,4 +39,4 @@ A waypoint in chat must be enclosed by square brackets. Parameters are split by 
 ### Example
 `[x:105,y:72,z:-723,dim:0,name:Test,color:#B311CF,delete:false]`
 ## My Other Mods That Use This
-https://www.curseforge.com/minecraft/mc-mods/journeymap-waypoint-radar/settings/general
+https://www.curseforge.com/minecraft/mc-mods/journeymap-waypoint-radar
