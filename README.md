@@ -1,4 +1,4 @@
-# JourneyMapQOL_1.7.10
+# JourneyMap QOL 1.7.10
 A share waypoint button and the formatted text feature is missing in the 1.7.10 version of journeymap. 
 
 This simple mod adds those features and some other quality of life improvements. 
