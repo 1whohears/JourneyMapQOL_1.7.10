@@ -11,15 +11,17 @@ If you type or receive correctly formatted text, it is converted into a waypoint
 
 You can disable the auto click feature with the command and manually click on waypoints in chat.
 
-The ApiWaypointManager class has some functions that handle the packets for sharing waypoints.
+The ApiWaypointManager class has some functions that handle the packets for sharing and removing waypoints.
 ## Commands
+`/waypoint share <waypoint name> [player name]`
+
 `/waypoint cleardeath [number of recent death points to save]`
 
 `/waypoint remove <waypoint name>`
 
-`/waypoint disableautoclick (true/false)`
+`/waypoint removeprefix <prefix name>`
 
-`/waypoint share <waypoint name> [player name]`
+`/waypoint disableautoclick (true/false)`
 ## Formatted Text
 A waypoint in chat must be enclosed by square brackets. Parameters are split by "," and defining a parameter uses ":"
 ### Parameters: `name` (type | description | default)
