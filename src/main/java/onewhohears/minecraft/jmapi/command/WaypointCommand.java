@@ -49,7 +49,7 @@ public class WaypointCommand extends CommandBase {
 	public List addTabCompletionOptions(ICommandSender sender, String[] args) {
 		if (args.length == 1) {
 			return CommandBase.getListOfStringsMatchingLastWord(args, new String[] 
-					 {"cleardeath", "remove", "share", "disableautoclick"}); 
+					 {"cleardeath", "share", "remove", "removeprefix","disableautoclick"}); 
 		} else if (args.length == 2) {
 			if (args[0].equals("remove") || args[0].equals("share")) {
 				return CommandBase.getListOfStringsMatchingLastWord(args, getWaypointNames()); 
@@ -122,6 +122,9 @@ public class WaypointCommand extends CommandBase {
 			int d = deleteWaypointsWithSameName(name);
 			if (d > 0) sendMessage(d+" Waypoints named "+removeQuotes(name)+" were removed!");
 			else sendMessage("There wasn't any Waypoints named "+args[1]+" to be removed!");
+		} else if (args[0].equals("removeprefix") && args.length == 2) {
+			deleteWaypointsWithPrefix(args[1]);
+			sendMessage("Removed waypoints with prefix "+args[1]);
 		} else if (args[0].equals("disableautoclick") && args.length == 2) {
 			if (args[1].equals("true")) {
 				Minecraft.getMinecraft().thePlayer.getEntityData().setBoolean(WaypointChatKeys.getNoAutoKey(), true);
@@ -219,6 +222,21 @@ public class WaypointCommand extends CommandBase {
 			}
 		}
 		return deleted;
+	}
+	
+	private boolean deleteWaypointsWithPrefix(String prefix) {
+		boolean delete = false;
+		Waypoint[] waypoints = WaypointStore.instance().getAll()
+				.toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
+		for (int i = 0; i < waypoints.length; ++i) {
+			if (waypoints[i].getName().length() >= prefix.length()) {
+				if (waypoints[i].getName().subSequence(0, prefix.length()).equals(prefix)) {
+					WaypointStore.instance().remove(waypoints[i]);
+					delete = true;
+				}
+			}
+		}
+		return delete;
 	}
 	
 	private String removeQuotes(String name) {

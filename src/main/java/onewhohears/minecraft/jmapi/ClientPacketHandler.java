@@ -81,20 +81,24 @@ public class ClientPacketHandler extends ServerPacketHandler {
 				String pName = bbis.readUTF();
 				if (Minecraft.getMinecraft().thePlayer.getDisplayName().equals(pName)) {
 					String name = bbis.readUTF();
-					if (deleteWaypointsWithSameName(name)) sendDeleteMessage(name);
+					boolean showMessage = bbis.readBoolean();
+					if (deleteWaypointsWithSameName(name) && showMessage) sendDeleteMessage(name);
 				}
 			} case 3 : {
 				String pName = bbis.readUTF();
 				if (Minecraft.getMinecraft().thePlayer.getDisplayName().equals(pName)) {
 					String prefix = bbis.readUTF();
-					if (deleteWaypointsWithPrefix(prefix)) sendDeletePrefixMessage(prefix);
+					boolean showMessage = bbis.readBoolean();
+					if (deleteWaypointsWithPrefix(prefix) && showMessage) sendDeletePrefixMessage(prefix);
 				}
 			} case 4 : {
 				String name = bbis.readUTF();
-				if (deleteWaypointsWithSameName(name)) sendDeleteMessage(name);
+				boolean showMessage = bbis.readBoolean();
+				if (deleteWaypointsWithSameName(name) && showMessage) sendDeleteMessage(name);
 			} case 5 : {
 				String prefix = bbis.readUTF();
-				if (deleteWaypointsWithPrefix(prefix)) sendDeletePrefixMessage(prefix);
+				boolean showMessage = bbis.readBoolean();
+				if (deleteWaypointsWithPrefix(prefix) && showMessage) sendDeletePrefixMessage(prefix);
 			} }
 			bbis.close();
 		} catch (IOException e) {
