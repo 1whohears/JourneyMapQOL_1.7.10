@@ -123,8 +123,8 @@ public class WaypointCommand extends CommandBase {
 			if (d > 0) sendMessage(d+" Waypoints named "+removeQuotes(name)+" were removed!");
 			else sendMessage("There wasn't any Waypoints named "+args[1]+" to be removed!");
 		} else if (args[0].equals("removeprefix") && args.length == 2) {
-			deleteWaypointsWithPrefix(args[1]);
-			sendMessage("Removed waypoints with prefix "+args[1]);
+			if (deleteWaypointsWithPrefix(args[1])) sendMessage("Removed waypoints with prefix "+args[1]);
+			else sendMessage("There wasn't any Waypoints with prefix "+args[1]+" to be removed!");
 		} else if (args[0].equals("disableautoclick") && args.length == 2) {
 			if (args[1].equals("true")) {
 				Minecraft.getMinecraft().thePlayer.getEntityData().setBoolean(WaypointChatKeys.getNoAutoKey(), true);
