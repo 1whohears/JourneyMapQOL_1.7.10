@@ -162,6 +162,93 @@ public class ApiWaypointManager {
 		return true;
 	}
 	
+	/**
+	 * remove all waypoints with this name from all players
+	 * @param waypointName
+	 * @return if it was sent successfully
+	 */
+	public boolean removeAllWaypoints(String waypointName) {
+		FMLProxyPacket packet = createRemoveWaypointPacket("", waypointName, true);
+		if (packet == null) return false;
+		JourneyMapApiMod.Channel.sendToServer(packet);
+		return true;
+	}
+	
+	/**
+	 * delete all of this player's waypoints with this name
+	 * @param playerName
+	 * @param waypointName
+	 * @return if it was sent successfully
+	 */
+	public boolean removePlayerWaypoint(String playerName, String waypointName) {
+		FMLProxyPacket packet = createRemoveWaypointPacket(playerName, waypointName, false);
+		if (packet == null) return false;
+		JourneyMapApiMod.Channel.sendToServer(packet);
+		return true;
+	}
+	
+	/**
+	 * remove all waypoints with this prefix from all players
+	 * @param waypointName
+	 * @return if it was sent successfully
+	 */
+	public boolean removeAllWaypointsByPrefix(String prefixName) {
+		FMLProxyPacket packet = createRemoveWaypointPrefixPacket("", prefixName, true);
+		if (packet == null) return false;
+		JourneyMapApiMod.Channel.sendToServer(packet);
+		return true;
+	}
+	
+	/**
+	 * delete all of this player's waypoints that's name start with the prefix
+	 * @param playerName
+	 * @param prefixName
+	 * @return if it was sent successfully
+	 */
+	public boolean removePlayerWaypointByPrefix(String playerName, String prefixName) {
+		FMLProxyPacket packet = createRemoveWaypointPrefixPacket(playerName, prefixName, false);
+		if (packet == null) return false;
+		JourneyMapApiMod.Channel.sendToServer(packet);
+		return true;
+	}
+	
+	private FMLProxyPacket createRemoveWaypointPacket(String playerName, String waypointName, boolean allPlayers) {
+		ByteBufOutputStream bbos = new ByteBufOutputStream(Unpooled.buffer());
+		FMLProxyPacket thePacket = null;
+		try {
+			if (allPlayers) {
+				bbos.writeInt(2); // type
+				bbos.writeUTF(playerName); // player name
+			} else bbos.writeInt(4); // type
+			bbos.writeUTF(waypointName); // prefix name
+			thePacket = new FMLProxyPacket(bbos.buffer(), "JMA_Server");
+			bbos.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return thePacket;
+	}
+	
+	private FMLProxyPacket createRemoveWaypointPrefixPacket(String playerName, String prefixName, boolean allPlayers) {
+		ByteBufOutputStream bbos = new ByteBufOutputStream(Unpooled.buffer());
+		FMLProxyPacket thePacket = null;
+		try {
+			if (allPlayers) {
+				bbos.writeInt(3); // type
+				bbos.writeUTF(playerName); // player name
+			} else bbos.writeInt(5); // type
+			bbos.writeUTF(playerName); // player name
+			bbos.writeUTF(prefixName); // prefix name
+			thePacket = new FMLProxyPacket(bbos.buffer(), "JMA_Server");
+			bbos.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return thePacket;
+	}
+	
 	private FMLProxyPacket createWaypointPacket(Waypoint waypoint, int dim, boolean delete, String playerName) {
 		if (waypoint == null) return null;
 		ByteBufOutputStream bbos = new ByteBufOutputStream(Unpooled.buffer());

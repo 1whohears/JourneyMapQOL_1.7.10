@@ -223,7 +223,6 @@ public class WaypointCommand extends CommandBase {
 	
 	private String removeQuotes(String name) {
 		if (name.charAt(0) == '"' && name.charAt(name.length()-1) == '"') {
-			//name = name.replace('_', ' ');
 			return name.substring(1, name.length()-1);
 		}
 		return name;
