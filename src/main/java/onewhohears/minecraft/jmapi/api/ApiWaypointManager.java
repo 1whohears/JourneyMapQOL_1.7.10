@@ -165,6 +165,7 @@ public class ApiWaypointManager {
 	/**
 	 * remove all waypoints with this name from all players
 	 * @param waypointName
+	 * @param showMessage notify players in chat that their waypoint was deleted
 	 * @return if it was sent successfully
 	 */
 	public boolean removeAllWaypoints(String waypointName, boolean showMessage) {
@@ -178,6 +179,7 @@ public class ApiWaypointManager {
 	 * delete all of this player's waypoints with this name
 	 * @param playerName
 	 * @param waypointName
+	 * @param showMessage notify players in chat that their waypoint was deleted
 	 * @return if it was sent successfully
 	 */
 	public boolean removePlayerWaypoint(String playerName, String waypointName, boolean showMessage) {
@@ -189,7 +191,8 @@ public class ApiWaypointManager {
 	
 	/**
 	 * remove all waypoints with this prefix from all players
-	 * @param waypointName
+	 * @param prefixName
+	 * @param showMessage notify players in chat that their waypoint was deleted
 	 * @return if it was sent successfully
 	 */
 	public boolean removeAllWaypointsByPrefix(String prefixName, boolean showMessage) {
@@ -203,6 +206,7 @@ public class ApiWaypointManager {
 	 * delete all of this player's waypoints that's name start with the prefix
 	 * @param playerName
 	 * @param prefixName
+	 * @param showMessage notify players in chat that their waypoint was deleted
 	 * @return if it was sent successfully
 	 */
 	public boolean removePlayerWaypointByPrefix(String playerName, String prefixName, boolean showMessage) {
