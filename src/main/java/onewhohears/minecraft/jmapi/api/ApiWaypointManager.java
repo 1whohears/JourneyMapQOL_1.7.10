@@ -220,7 +220,7 @@ public class ApiWaypointManager {
 		ByteBufOutputStream bbos = new ByteBufOutputStream(Unpooled.buffer());
 		FMLProxyPacket thePacket = null;
 		try {
-			if (allPlayers) {
+			if (!allPlayers) {
 				bbos.writeInt(2); // type
 				bbos.writeUTF(playerName); // player name
 			} else bbos.writeInt(4); // type
@@ -239,7 +239,7 @@ public class ApiWaypointManager {
 		ByteBufOutputStream bbos = new ByteBufOutputStream(Unpooled.buffer());
 		FMLProxyPacket thePacket = null;
 		try {
-			if (allPlayers) {
+			if (!allPlayers) {
 				bbos.writeInt(3); // type
 				bbos.writeUTF(playerName); // player name
 			} else bbos.writeInt(5); // type
