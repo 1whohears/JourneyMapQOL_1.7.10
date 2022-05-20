@@ -31,10 +31,12 @@ public class WaypointChatClickEvent extends ClickEvent {
 	
 	private void createWayPoint() {
 		if (delete) deleteWaypointsWithSameName();
+		//System.out.println("Creating waypoint at chat click event "+waypoint.getName());
 		WaypointStore.instance().save(waypoint);
 	}
 	
 	private void deleteWaypointsWithSameName() {
+		//System.out.println("Deleting waypoints named "+waypoint.getName());
 		Waypoint[] waypoints = WaypointStore.instance().getAll().toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
 		for (int i = 0; i < waypoints.length; ++i) {
 			if (waypoints[i].getName().equals(waypoint.getName())) {

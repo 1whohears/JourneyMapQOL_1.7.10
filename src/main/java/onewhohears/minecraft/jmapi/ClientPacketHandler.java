@@ -28,48 +28,58 @@ public class ClientPacketHandler extends ServerPacketHandler {
 		ByteBufInputStream bbis = new ByteBufInputStream(event.packet.payload());
 		try {
 			int type = bbis.readInt();
+			//System.out.println("Recieved Packet in Client of type "+type);
 			// 0 = waypoint to all (server)
 			// 1 = waypoint to a player
 			// 2 = remove a player's waypoint by name
 			// 3 = remove a player's waypoint by prefix
 			// 4 = remove all player's waypoint by name
 			// 5 = remove all player's waypoint by prefix
+			boolean delete, showMessage;
+			int x, y, z, dim, color;
+			String name, pName, oName, prefix;
+			Waypoint waypoint;
+			ChatComponentText chat; 
+			ChatStyle style;
 			switch (type) {
-			case 0 : {
-				int x = bbis.readInt();
-				int y = bbis.readInt();
-				int z = bbis.readInt();
-				int dim = bbis.readInt();
-				int color = bbis.readInt();
-				String name = bbis.readUTF();
-				String pName = bbis.readUTF();
-				boolean delete = bbis.readBoolean();
+			case 0 : 
+				x = bbis.readInt();
+				y = bbis.readInt();
+				z = bbis.readInt();
+				dim = bbis.readInt();
+				color = bbis.readInt();
+				name = bbis.readUTF();
+				pName = bbis.readUTF();
+				//System.out.println("Waypoint name = "+name+" from "+pName);
+				delete = bbis.readBoolean();
 				if (Minecraft.getMinecraft().thePlayer.getDisplayName().equals(pName)) break;
-				Waypoint waypoint = new Waypoint(name, x, y, z, Color.YELLOW, Type.Normal, dim);
+				waypoint = new Waypoint(name, x, y, z, Color.YELLOW, Type.Normal, dim);
 				waypoint.setColor(color);
-				ChatComponentText chat = new ChatComponentText("Waypoint "+name+" shared by "+pName);
-				ChatStyle style = new ChatStyle();
+				chat = new ChatComponentText("Waypoint "+name+" shared by "+pName);
+				style = new ChatStyle();
 				style.setColor(EnumChatFormatting.AQUA);
 				style.setUnderlined(true);
 				style.setChatClickEvent(new WaypointChatClickEvent(null, "", waypoint, delete));
 				chat.setChatStyle(style);
 				Minecraft.getMinecraft().thePlayer.addChatComponentMessage(chat);
 				if (autoCreate) createWayPoint(waypoint, delete);
-			} case 1 : {
-				String oName = bbis.readUTF();
+				break;
+			case 1 : 
+				oName = bbis.readUTF();
 				if (Minecraft.getMinecraft().thePlayer.getDisplayName().equals(oName)) {
-					int x = bbis.readInt();
-					int y = bbis.readInt();
-					int z = bbis.readInt();
-					int dim = bbis.readInt();
-					int color = bbis.readInt();
-					String name = bbis.readUTF();
-					String pName = bbis.readUTF();
-					boolean delete = bbis.readBoolean();
-					Waypoint waypoint = new Waypoint(name, x, y, z, Color.YELLOW, Type.Normal, dim);
+					x = bbis.readInt();
+					y = bbis.readInt();
+					z = bbis.readInt();
+					dim = bbis.readInt();
+					color = bbis.readInt();
+					name = bbis.readUTF();
+					pName = bbis.readUTF();
+					//System.out.println("Waypoint name = "+name+" from "+pName);
+					delete = bbis.readBoolean();
+					waypoint = new Waypoint(name, x, y, z, Color.YELLOW, Type.Normal, dim);
 					waypoint.setColor(color);
-					ChatComponentText chat = new ChatComponentText(pName+" shared waypoint "+name+" with you!");
-					ChatStyle style = new ChatStyle();
+					chat = new ChatComponentText(pName+" shared waypoint "+name+" with you!");
+					style = new ChatStyle();
 					style.setColor(EnumChatFormatting.AQUA);
 					style.setUnderlined(true);
 					style.setChatClickEvent(new WaypointChatClickEvent(null, "", waypoint, delete));
@@ -77,29 +87,34 @@ public class ClientPacketHandler extends ServerPacketHandler {
 					Minecraft.getMinecraft().thePlayer.addChatComponentMessage(chat);
 					if (autoCreate) createWayPoint(waypoint, delete);
 				}
-			} case 2 : {
-				String pName = bbis.readUTF();
+				break;
+			case 2 :
+				pName = bbis.readUTF();
 				if (Minecraft.getMinecraft().thePlayer.getDisplayName().equals(pName)) {
-					String name = bbis.readUTF();
-					boolean showMessage = bbis.readBoolean();
+					name = bbis.readUTF();
+					showMessage = bbis.readBoolean();
 					if (deleteWaypointsWithSameName(name) && showMessage) sendDeleteMessage(name);
 				}
-			} case 3 : {
-				String pName = bbis.readUTF();
+				break;
+			case 3 :
+				pName = bbis.readUTF();
 				if (Minecraft.getMinecraft().thePlayer.getDisplayName().equals(pName)) {
-					String prefix = bbis.readUTF();
-					boolean showMessage = bbis.readBoolean();
+					prefix = bbis.readUTF();
+					showMessage = bbis.readBoolean();
 					if (deleteWaypointsWithPrefix(prefix) && showMessage) sendDeletePrefixMessage(prefix);
 				}
-			} case 4 : {
-				String name = bbis.readUTF();
-				boolean showMessage = bbis.readBoolean();
+				break;
+			case 4 :
+				name = bbis.readUTF();
+				showMessage = bbis.readBoolean();
 				if (deleteWaypointsWithSameName(name) && showMessage) sendDeleteMessage(name);
-			} case 5 : {
-				String prefix = bbis.readUTF();
-				boolean showMessage = bbis.readBoolean();
+				break;
+			case 5 :
+				prefix = bbis.readUTF();
+				showMessage = bbis.readBoolean();
 				if (deleteWaypointsWithPrefix(prefix) && showMessage) sendDeletePrefixMessage(prefix);
-			} }
+				break;
+			}
 			bbis.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -126,26 +141,28 @@ public class ClientPacketHandler extends ServerPacketHandler {
 	
 	private void createWayPoint(Waypoint waypoint, boolean delete) {
 		if (delete) deleteWaypointsWithSameName(waypoint.getName());
+		//System.out.println("Creating waypoint in client packet handeler "+waypoint.getName());
 		WaypointStore.instance().save(waypoint);
 	}
 	
 	private boolean deleteWaypointsWithSameName(String name) {
+		//System.out.println("Deleting waypoints named "+name);
 		boolean delete = false;
-		Waypoint[] waypoints = WaypointStore.instance().getAll()
-				.toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
+		Waypoint[] waypoints = WaypointStore.instance().getAll().toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
 		for (int i = 0; i < waypoints.length; ++i) {
 			if (waypoints[i].getName().equals(name)) {
 				WaypointStore.instance().remove(waypoints[i]);
 				delete = true;
+				//System.out.println("Deleting "+waypoints[i].getName());
 			}
 		}
 		return delete;
 	}
 	
 	private boolean deleteWaypointsWithPrefix(String prefix) {
+		//System.out.println("Deleting waypoints with prefix "+prefix);
 		boolean delete = false;
-		Waypoint[] waypoints = WaypointStore.instance().getAll()
-				.toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
+		Waypoint[] waypoints = WaypointStore.instance().getAll().toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
 		for (int i = 0; i < waypoints.length; ++i) {
 			if (waypoints[i].getName().length() >= prefix.length()) {
 				if (waypoints[i].getName().subSequence(0, prefix.length()).equals(prefix)) {

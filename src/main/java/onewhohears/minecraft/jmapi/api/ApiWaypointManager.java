@@ -26,7 +26,7 @@ public class ApiWaypointManager {
 	 * @return if it was sent successfully
 	 */
 	public boolean shareAllPlayersWaypoint(Waypoint waypoint, int dimension, String senderName) {
-		FMLProxyPacket packet = createWaypointPacket(waypoint, dimension, false, senderName);
+		FMLProxyPacket packet = createWaypointAllPlayersPacket(waypoint, dimension, false, senderName);
 		if (packet == null) return false;
 		JourneyMapApiMod.Channel.sendToServer(packet);
 		return true;
@@ -41,7 +41,7 @@ public class ApiWaypointManager {
 	 * @return if it was sent successfully
 	 */
 	public boolean shareAllPlayersWaypoint(Waypoint waypoint, int dimension, boolean delete, String senderName) {
-		FMLProxyPacket packet = createWaypointPacket(waypoint, dimension, false, senderName);
+		FMLProxyPacket packet = createWaypointAllPlayersPacket(waypoint, dimension, false, senderName);
 		if (packet == null) return false;
 		JourneyMapApiMod.Channel.sendToServer(packet);
 		return true;
@@ -61,7 +61,7 @@ public class ApiWaypointManager {
 	public boolean shareAllPlayersWaypoint(int x, int y, int z, int dimension, int color, String waypointName, String senderName) {
 		Waypoint waypoint = new Waypoint(waypointName, x, y, z, Color.YELLOW, Type.Normal, dimension);
 		waypoint.setColor(color);
-		FMLProxyPacket packet = createWaypointPacket(waypoint, dimension, false, senderName);
+		FMLProxyPacket packet = createWaypointAllPlayersPacket(waypoint, dimension, false, senderName);
 		if (packet == null) return false;
 		JourneyMapApiMod.Channel.sendToServer(packet);
 		return true;
@@ -82,7 +82,7 @@ public class ApiWaypointManager {
 	public boolean shareAllPlayersWaypoint(int x, int y, int z, int dimension, int color, boolean delete, String waypointName, String senderName) {
 		Waypoint waypoint = new Waypoint(waypointName, x, y, z, Color.YELLOW, Type.Normal, dimension);
 		waypoint.setColor(color);
-		FMLProxyPacket packet = createWaypointPacket(waypoint, dimension, delete, senderName);
+		FMLProxyPacket packet = createWaypointAllPlayersPacket(waypoint, dimension, delete, senderName);
 		if (packet == null) return false;
 		JourneyMapApiMod.Channel.sendToServer(packet);
 		return true;
@@ -97,7 +97,7 @@ public class ApiWaypointManager {
 	 * @return if it was sent successfully
 	 */
 	public boolean shareWaypointToPlayer(Waypoint waypoint, int dimension, String senderName, String recieverName) {
-		FMLProxyPacket packet = createWaypointPacket(waypoint, dimension, false, senderName, recieverName);
+		FMLProxyPacket packet = createWaypointToPlayerPacket(waypoint, dimension, false, senderName, recieverName);
 		if (packet == null) return false;
 		JourneyMapApiMod.Channel.sendToServer(packet);
 		return true;
@@ -113,7 +113,7 @@ public class ApiWaypointManager {
 	 * @return if it was sent successfully
 	 */
 	public boolean shareWaypointToPlayer(Waypoint waypoint, int dimension, boolean delete, String senderName, String recieverName) {
-		FMLProxyPacket packet = createWaypointPacket(waypoint, dimension, delete, senderName, recieverName);
+		FMLProxyPacket packet = createWaypointToPlayerPacket(waypoint, dimension, delete, senderName, recieverName);
 		if (packet == null) return false;
 		JourneyMapApiMod.Channel.sendToServer(packet);
 		return true;
@@ -134,7 +134,7 @@ public class ApiWaypointManager {
 	public boolean shareWaypointToPlayer(int x, int y, int z, int dimension, int color, String waypointName, String senderName, String recieverName) {
 		Waypoint waypoint = new Waypoint(waypointName, x, y, z, Color.YELLOW, Type.Normal, dimension);
 		waypoint.setColor(color);
-		FMLProxyPacket packet = createWaypointPacket(waypoint, dimension, false, senderName, recieverName);
+		FMLProxyPacket packet = createWaypointToPlayerPacket(waypoint, dimension, false, senderName, recieverName);
 		if (packet == null) return false;
 		JourneyMapApiMod.Channel.sendToServer(packet);
 		return true;
@@ -156,7 +156,7 @@ public class ApiWaypointManager {
 	public boolean shareWaypointToPlayer(int x, int y, int z, int dimension, int color, boolean delete, String waypointName, String senderName, String recieverName) {
 		Waypoint waypoint = new Waypoint(waypointName, x, y, z, Color.YELLOW, Type.Normal, dimension);
 		waypoint.setColor(color);
-		FMLProxyPacket packet = createWaypointPacket(waypoint, dimension, delete, senderName, recieverName);
+		FMLProxyPacket packet = createWaypointToPlayerPacket(waypoint, dimension, delete, senderName, recieverName);
 		if (packet == null) return false;
 		JourneyMapApiMod.Channel.sendToServer(packet);
 		return true;
@@ -223,7 +223,9 @@ public class ApiWaypointManager {
 			if (!allPlayers) {
 				bbos.writeInt(2); // type
 				bbos.writeUTF(playerName); // player name
-			} else bbos.writeInt(4); // type
+			} else {
+				bbos.writeInt(4); // type
+			}
 			bbos.writeUTF(waypointName); // prefix name
 			bbos.writeBoolean(showMessage); // show message
 			thePacket = new FMLProxyPacket(bbos.buffer(), "JMA_Server");
@@ -242,8 +244,9 @@ public class ApiWaypointManager {
 			if (!allPlayers) {
 				bbos.writeInt(3); // type
 				bbos.writeUTF(playerName); // player name
-			} else bbos.writeInt(5); // type
-			bbos.writeUTF(playerName); // player name
+			} else {
+				bbos.writeInt(5); // type
+			}
 			bbos.writeUTF(prefixName); // prefix name
 			bbos.writeBoolean(showMessage); // show message
 			thePacket = new FMLProxyPacket(bbos.buffer(), "JMA_Server");
@@ -255,10 +258,11 @@ public class ApiWaypointManager {
 		return thePacket;
 	}
 	
-	private FMLProxyPacket createWaypointPacket(Waypoint waypoint, int dim, boolean delete, String playerName) {
+	private FMLProxyPacket createWaypointAllPlayersPacket(Waypoint waypoint, int dim, boolean delete, String playerName) {
 		if (waypoint == null) return null;
 		ByteBufOutputStream bbos = new ByteBufOutputStream(Unpooled.buffer());
 		FMLProxyPacket thePacket = null;
+		//System.out.println("Waypoint Packet to All Players "+waypoint.getName());
 		try {
 			bbos.writeInt(0); //type
 			bbos.writeInt(waypoint.getX()); //x
@@ -278,7 +282,7 @@ public class ApiWaypointManager {
 		return thePacket;
 	}
 	
-	private FMLProxyPacket createWaypointPacket(Waypoint waypoint, int dim, boolean delete, String pName, String otherName) {
+	private FMLProxyPacket createWaypointToPlayerPacket(Waypoint waypoint, int dim, boolean delete, String pName, String otherName) {
 		if (waypoint == null) return null;
 		ByteBufOutputStream bbos = new ByteBufOutputStream(Unpooled.buffer());
 		FMLProxyPacket thePacket = null;

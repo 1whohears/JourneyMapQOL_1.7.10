@@ -16,6 +16,7 @@ public class ServerPacketHandler {
 		ByteBufInputStream bbis = new ByteBufInputStream(event.packet.payload());
 		try {
 			int type = bbis.readInt();
+			//System.out.println("Recieved Packet in Server of type "+type);
 			// 0 = waypoint to all
 			// 1 = waypoint to a player
 			// 2 = remove a player's waypoint by name

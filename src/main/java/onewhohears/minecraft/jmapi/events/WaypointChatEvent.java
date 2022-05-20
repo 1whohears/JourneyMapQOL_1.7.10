@@ -22,7 +22,17 @@ public class WaypointChatEvent {
 	
 	@SubscribeEvent
 	public void chatReceived(ClientChatReceivedEvent event) {
+		//System.out.println("Chat Recieved = "+event.message.getFormattedText());
 		autoCreate = !Minecraft.getMinecraft().thePlayer.getEntityData().getBoolean(WaypointChatKeys.getNoAutoKey());
+		ChatStyle style = event.message.getChatStyle();
+		if (style != null && style.getChatClickEvent() != null) {
+			if (style.getChatClickEvent() instanceof WaypointChatClickEvent) {
+				WaypointChatClickEvent click = (WaypointChatClickEvent) style.getChatClickEvent();
+				//System.out.println("Recieved chat has a click event with waypoint named "+click.getWaypoint().getName());
+				if (autoCreate) createWayPoint(click.getWaypoint(), click.getDelete());
+				return;
+			}
+		}
 		String text = event.message.getUnformattedText();
 		int index = text.indexOf('>')+1;
 		String name = text.substring(0, index);
@@ -36,15 +46,6 @@ public class WaypointChatEvent {
 		if (cancel) { 
 			if (isBlank(text)) event.setCanceled(true);
 			else event.message = new ChatComponentText(name+text);
-		}
-		if (groups.length == 0) {
-			ChatStyle style = event.message.getChatStyle();
-			if (style != null && style.getChatClickEvent() != null) {
-				if (style.getChatClickEvent() instanceof WaypointChatClickEvent) {
-					WaypointChatClickEvent click = (WaypointChatClickEvent) style.getChatClickEvent();
-					if (autoCreate) createWayPoint(click.getWaypoint(), click.getDelete());
-				}
-			}
 		}
 	}
 	
@@ -138,12 +139,13 @@ public class WaypointChatEvent {
 	
 	private void createWayPoint(Waypoint waypoint, boolean delete) {
 		if (delete) deleteWaypointsWithSameName(waypoint);
+		//System.out.println("Creating waypoint in chat recieved event: "+waypoint.getName());
 		WaypointStore.instance().save(waypoint);
 	}
 	
 	private void deleteWaypointsWithSameName(Waypoint waypoint) {
-		Waypoint[] waypoints = WaypointStore.instance().getAll()
-				.toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
+		//System.out.println("Deleting waypoints named "+waypoint.getName());
+		Waypoint[] waypoints = WaypointStore.instance().getAll().toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
 		for (int i = 0; i < waypoints.length; ++i) {
 			if (waypoints[i].getName().equals(waypoint.getName())) {
 				WaypointStore.instance().remove(waypoints[i]);
