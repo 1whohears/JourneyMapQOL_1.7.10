@@ -26,7 +26,7 @@ public class WaypointChatClickEvent extends ClickEvent {
 			createWayPoint();
 			ran = true;
 		}
-		return Action.OPEN_FILE;
+		return null;
 	}
 	
 	private void createWayPoint() {
