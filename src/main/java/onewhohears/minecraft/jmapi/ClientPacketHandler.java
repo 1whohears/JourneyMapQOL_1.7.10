@@ -141,12 +141,13 @@ public class ClientPacketHandler extends ServerPacketHandler {
 	
 	private void createWayPoint(Waypoint waypoint, boolean delete) {
 		if (delete) deleteWaypointsWithSameName(waypoint.getName());
-		//System.out.println("Creating waypoint in client packet handeler "+waypoint.getName());
+		//System.out.println("Creating waypoint in client packet handler "+waypoint.getName());
 		WaypointStore.instance().save(waypoint);
 	}
 	
 	private boolean deleteWaypointsWithSameName(String name) {
 		//System.out.println("Deleting waypoints named "+name);
+		if (name == null || name.equals("")) return false;
 		boolean delete = false;
 		Waypoint[] waypoints = WaypointStore.instance().getAll().toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
 		for (int i = 0; i < waypoints.length; ++i) {
@@ -161,6 +162,7 @@ public class ClientPacketHandler extends ServerPacketHandler {
 	
 	private boolean deleteWaypointsWithPrefix(String prefix) {
 		//System.out.println("Deleting waypoints with prefix "+prefix);
+		if (prefix == null || prefix.equals("")) return false;
 		boolean delete = false;
 		Waypoint[] waypoints = WaypointStore.instance().getAll().toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
 		for (int i = 0; i < waypoints.length; ++i) {

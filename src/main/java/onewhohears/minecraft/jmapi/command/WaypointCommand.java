@@ -211,6 +211,7 @@ public class WaypointCommand extends CommandBase {
 	}
 	
 	private int deleteWaypointsWithSameName(String name) {
+		if (name == null || name.equals("")) return 0;
 		name = removeQuotes(name);
 		Waypoint[] waypoints = WaypointStore.instance().getAll()
 				.toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
@@ -225,6 +226,7 @@ public class WaypointCommand extends CommandBase {
 	}
 	
 	private boolean deleteWaypointsWithPrefix(String prefix) {
+		if (prefix == null || prefix.equals("")) return false;
 		boolean delete = false;
 		Waypoint[] waypoints = WaypointStore.instance().getAll()
 				.toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
