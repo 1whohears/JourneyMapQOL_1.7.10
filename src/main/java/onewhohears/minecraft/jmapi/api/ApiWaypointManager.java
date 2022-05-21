@@ -6,6 +6,7 @@ import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
 import journeymap.client.model.Waypoint;
+import net.minecraft.server.MinecraftServer;
 import onewhohears.minecraft.jmapi.JourneyMapApiMod;
 
 public class ApiWaypointManager {
@@ -18,32 +19,34 @@ public class ApiWaypointManager {
 	
 	/**
 	 * send a waypoint to all players
-	 * @param waypoint
+	 * @param waypoint Do not call Waypoint constructor from server side!
 	 * @param dimension
 	 * @param senderName
+	 * @param isFromClient is this method being called on the client or the server
 	 * @return if it was sent successfully
 	 */
-	public boolean shareAllPlayersWaypoint(Waypoint waypoint, int dimension, String senderName) {
+	public boolean shareAllPlayersWaypoint(Waypoint waypoint, int dimension, String senderName, boolean isFromClient) {
 		FMLProxyPacket packet = createWaypointAllPlayersPacket(waypoint.getX(), waypoint.getY(), waypoint.getZ(), 
 				waypoint.getColor(), waypoint.getName(), dimension, false, senderName);
 		if (packet == null) return false;
-		JourneyMapApiMod.Channel.sendToServer(packet);
+		sendPacket(packet, isFromClient);
 		return true;
 	}
 	
 	/**
 	 * send a waypoint to all players
-	 * @param waypoint
+	 * @param waypoint Do not call Waypoint constructor from server side!
 	 * @param dimension
 	 * @param delete remove all other waypoints with the same name
 	 * @param senderName
+	 * @param isFromClient is this method being called on the client or the server
 	 * @return if it was sent successfully
 	 */
-	public boolean shareAllPlayersWaypoint(Waypoint waypoint, int dimension, boolean delete, String senderName) {
+	public boolean shareAllPlayersWaypoint(Waypoint waypoint, int dimension, boolean delete, String senderName, boolean isFromClient) {
 		FMLProxyPacket packet = createWaypointAllPlayersPacket(waypoint.getX(), waypoint.getY(), waypoint.getZ(), 
 				waypoint.getColor(), waypoint.getName(), dimension, false, senderName);
 		if (packet == null) return false;
-		JourneyMapApiMod.Channel.sendToServer(packet);
+		sendPacket(packet, isFromClient);
 		return true;
 	}
 	
@@ -56,12 +59,14 @@ public class ApiWaypointManager {
 	 * @param color
 	 * @param waypointName
 	 * @param senderName
+	 * @param isFromClient is this method being called on the client or the server
 	 * @return if it was sent successfully
 	 */
-	public boolean shareAllPlayersWaypoint(int x, int y, int z, int dimension, int color, String waypointName, String senderName) {
+	public boolean shareAllPlayersWaypoint(int x, int y, int z, int dimension, int color, 
+			String waypointName, String senderName, boolean isFromClient) {
 		FMLProxyPacket packet = createWaypointAllPlayersPacket(x, y, z, color, waypointName, dimension, false, senderName);
 		if (packet == null) return false;
-		JourneyMapApiMod.Channel.sendToServer(packet);
+		sendPacket(packet, isFromClient);
 		return true;
 	}
 	
@@ -75,45 +80,51 @@ public class ApiWaypointManager {
 	 * @param delete remove all other waypoints with the same name
 	 * @param waypointName
 	 * @param senderName
+	 * @param isFromClient is this method being called on the client or the server
 	 * @return if it was sent successfully
 	 */
-	public boolean shareAllPlayersWaypoint(int x, int y, int z, int dimension, int color, boolean delete, String waypointName, String senderName) {
+	public boolean shareAllPlayersWaypoint(int x, int y, int z, int dimension, int color, boolean delete, 
+			String waypointName, String senderName, boolean isFromClient) {
 		FMLProxyPacket packet = createWaypointAllPlayersPacket(x, y, z, color, waypointName, dimension, delete, senderName);
 		if (packet == null) return false;
-		JourneyMapApiMod.Channel.sendToServer(packet);
+		sendPacket(packet, isFromClient);
 		return true;
 	}
 	
 	/**
 	 * send a waypoint to a certain player
-	 * @param waypoint
+	 * @param waypoint Do not call Waypoint constructor from server side!
 	 * @param dimension
 	 * @param senderName
 	 * @param recieverName
+	 * @param isFromClient is this method being called on the client or the server
 	 * @return if it was sent successfully
 	 */
-	public boolean shareWaypointToPlayer(Waypoint waypoint, int dimension, String senderName, String recieverName) {
+	public boolean shareWaypointToPlayer(Waypoint waypoint, int dimension, 
+			String senderName, String recieverName, boolean isFromClient) {
 		FMLProxyPacket packet = createWaypointToPlayerPacket(waypoint.getX(), waypoint.getY(), waypoint.getZ(), 
 				waypoint.getColor(), waypoint.getName(), dimension, false, senderName, recieverName);
 		if (packet == null) return false;
-		JourneyMapApiMod.Channel.sendToServer(packet);
+		sendPacket(packet, isFromClient);
 		return true;
 	}
 	
 	/**
 	 * send a waypoint to a certain player
-	 * @param waypoint
+	 * @param waypoint Do not call Waypoint constructor from server side!
 	 * @param dimension
 	 * @param delete remove all other waypoints with the same name
 	 * @param senderName
 	 * @param recieverName
+	 * @param isFromClient is this method being called on the client or the server
 	 * @return if it was sent successfully
 	 */
-	public boolean shareWaypointToPlayer(Waypoint waypoint, int dimension, boolean delete, String senderName, String recieverName) {
+	public boolean shareWaypointToPlayer(Waypoint waypoint, int dimension, boolean delete, 
+			String senderName, String recieverName, boolean isFromClient) {
 		FMLProxyPacket packet = createWaypointToPlayerPacket(waypoint.getX(), waypoint.getY(), waypoint.getZ(), 
 				waypoint.getColor(), waypoint.getName(), dimension, delete, senderName, recieverName);
 		if (packet == null) return false;
-		JourneyMapApiMod.Channel.sendToServer(packet);
+		sendPacket(packet, isFromClient);
 		return true;
 	}
 	
@@ -127,12 +138,14 @@ public class ApiWaypointManager {
 	 * @param waypointName
 	 * @param senderName
 	 * @param recieverName
+	 * @param isFromClient is this method being called on the client or the server
 	 * @return if it was sent successfully
 	 */
-	public boolean shareWaypointToPlayer(int x, int y, int z, int dimension, int color, String waypointName, String senderName, String recieverName) {
+	public boolean shareWaypointToPlayer(int x, int y, int z, int dimension, int color, 
+			String waypointName, String senderName, String recieverName, boolean isFromClient) {
 		FMLProxyPacket packet = createWaypointToPlayerPacket(x, y, z, color, waypointName, dimension, false, senderName, recieverName);
 		if (packet == null) return false;
-		JourneyMapApiMod.Channel.sendToServer(packet);
+		sendPacket(packet, isFromClient);
 		return true;
 	}
 	
@@ -147,12 +160,14 @@ public class ApiWaypointManager {
 	 * @param waypointName
 	 * @param senderName
 	 * @param recieverName
+	 * @param isFromClient is this method being called on the client or the server
 	 * @return if it was sent successfully
 	 */
-	public boolean shareWaypointToPlayer(int x, int y, int z, int dimension, int color, boolean delete, String waypointName, String senderName, String recieverName) {
+	public boolean shareWaypointToPlayer(int x, int y, int z, int dimension, int color, boolean delete, 
+			String waypointName, String senderName, String recieverName, boolean isFromClient) {
 		FMLProxyPacket packet = createWaypointToPlayerPacket(x, y, z, color, waypointName, dimension, delete, senderName, recieverName);
 		if (packet == null) return false;
-		JourneyMapApiMod.Channel.sendToServer(packet);
+		sendPacket(packet, isFromClient);
 		return true;
 	}
 	
@@ -160,12 +175,13 @@ public class ApiWaypointManager {
 	 * remove all waypoints with this name from all players
 	 * @param waypointName
 	 * @param showMessage notify players in chat that their waypoint was deleted
+	 * @param isFromClient is this method being called on the client or the server
 	 * @return if it was sent successfully
 	 */
-	public boolean removeAllWaypoints(String waypointName, boolean showMessage) {
+	public boolean removeAllWaypoints(String waypointName, boolean showMessage, boolean isFromClient) {
 		FMLProxyPacket packet = createRemoveWaypointPacket("", waypointName, true, showMessage);
 		if (packet == null) return false;
-		JourneyMapApiMod.Channel.sendToServer(packet);
+		sendPacket(packet, isFromClient);
 		return true;
 	}
 	
@@ -174,12 +190,13 @@ public class ApiWaypointManager {
 	 * @param playerName
 	 * @param waypointName
 	 * @param showMessage notify players in chat that their waypoint was deleted
+	 * @param isFromClient is this method being called on the client or the server
 	 * @return if it was sent successfully
 	 */
-	public boolean removePlayerWaypoint(String playerName, String waypointName, boolean showMessage) {
+	public boolean removePlayerWaypoint(String playerName, String waypointName, boolean showMessage, boolean isFromClient) {
 		FMLProxyPacket packet = createRemoveWaypointPacket(playerName, waypointName, false, showMessage);
 		if (packet == null) return false;
-		JourneyMapApiMod.Channel.sendToServer(packet);
+		sendPacket(packet, isFromClient);
 		return true;
 	}
 	
@@ -187,12 +204,13 @@ public class ApiWaypointManager {
 	 * remove all waypoints with this prefix from all players
 	 * @param prefixName
 	 * @param showMessage notify players in chat that their waypoint was deleted
+	 * @param isFromClient is this method being called on the client or the server
 	 * @return if it was sent successfully
 	 */
-	public boolean removeAllWaypointsByPrefix(String prefixName, boolean showMessage) {
+	public boolean removeAllWaypointsByPrefix(String prefixName, boolean showMessage, boolean isFromClient) {
 		FMLProxyPacket packet = createRemoveWaypointPrefixPacket("", prefixName, true, showMessage);
 		if (packet == null) return false;
-		JourneyMapApiMod.Channel.sendToServer(packet);
+		sendPacket(packet, isFromClient);
 		return true;
 	}
 	
@@ -201,13 +219,19 @@ public class ApiWaypointManager {
 	 * @param playerName
 	 * @param prefixName
 	 * @param showMessage notify players in chat that their waypoint was deleted
+	 * @param isFromClient is this method being called on the client or the server
 	 * @return if it was sent successfully
 	 */
-	public boolean removePlayerWaypointByPrefix(String playerName, String prefixName, boolean showMessage) {
+	public boolean removePlayerWaypointByPrefix(String playerName, String prefixName, boolean showMessage, boolean isFromClient) {
 		FMLProxyPacket packet = createRemoveWaypointPrefixPacket(playerName, prefixName, false, showMessage);
 		if (packet == null) return false;
-		JourneyMapApiMod.Channel.sendToServer(packet);
+		sendPacket(packet, isFromClient);
 		return true;
+	}
+	
+	private void sendPacket(FMLProxyPacket packet, boolean isFromClient) {
+		if (isFromClient) JourneyMapApiMod.Channel.sendToServer(packet);
+		else MinecraftServer.getServer().getConfigurationManager().sendPacketToAllPlayers(packet);
 	}
 	
 	private FMLProxyPacket createRemoveWaypointPacket(String playerName, String waypointName, boolean allPlayers, boolean showMessage) {
