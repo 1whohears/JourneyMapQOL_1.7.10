@@ -34,14 +34,14 @@ public class JourneyMapApiMod {
     public static CommonProxy proxy;
     
     public static FMLEventChannel Channel;
-    public static FMLEventChannel ChannelPlayer;
+    //public static FMLEventChannel ChannelPlayer;
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
         logger = event.getModLog();
         Channel = NetworkRegistry.INSTANCE.newEventDrivenChannel("JMA_Server");
-        ChannelPlayer = NetworkRegistry.INSTANCE.newEventDrivenChannel("JMA_Player");
+        //ChannelPlayer = NetworkRegistry.INSTANCE.newEventDrivenChannel("JMA_Player");
         proxy.load();
     }
     
