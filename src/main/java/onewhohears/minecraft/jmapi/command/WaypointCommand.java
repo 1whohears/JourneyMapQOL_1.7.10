@@ -22,7 +22,7 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
 import onewhohears.minecraft.jmapi.JourneyMapApiMod;
-import onewhohears.minecraft.jmapi.events.WaypointChatKeys;
+import onewhohears.minecraft.jmapi.config.ConfigManager;
 
 @SideOnly(Side.CLIENT)
 public class WaypointCommand extends CommandBase {
@@ -127,10 +127,12 @@ public class WaypointCommand extends CommandBase {
 			else sendMessage("There wasn't any Waypoints with prefix "+args[1]+" to be removed!");
 		} else if (args[0].equals("disableautoclick") && args.length == 2) {
 			if (args[1].equals("true")) {
-				Minecraft.getMinecraft().thePlayer.getEntityData().setBoolean(WaypointChatKeys.getNoAutoKey(), true);
+				//Minecraft.getMinecraft().thePlayer.getEntityData().setBoolean(WaypointChatKeys.getNoAutoKey(), true);
+				ConfigManager.disableAutoClick = true;
 				sendMessage("Waypoints in chat will NOT be clicked on!");
 			} else if (args[1].equals("false")) {
-				Minecraft.getMinecraft().thePlayer.getEntityData().setBoolean(WaypointChatKeys.getNoAutoKey(), false);
+				//Minecraft.getMinecraft().thePlayer.getEntityData().setBoolean(WaypointChatKeys.getNoAutoKey(), false);
+				ConfigManager.disableAutoClick = false;
 				sendMessage("Waypoints in chat will automatically be clicked on!");
 			} else sendError("You must input true or false!");
 		} else if (args[0].equals("share")) {

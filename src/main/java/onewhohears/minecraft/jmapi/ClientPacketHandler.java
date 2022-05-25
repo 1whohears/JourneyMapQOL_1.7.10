@@ -15,8 +15,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
+import onewhohears.minecraft.jmapi.config.ConfigManager;
 import onewhohears.minecraft.jmapi.events.WaypointChatClickEvent;
-import onewhohears.minecraft.jmapi.events.WaypointChatKeys;
 
 @SideOnly(Side.CLIENT)
 public class ClientPacketHandler extends ServerPacketHandler {
@@ -24,7 +24,8 @@ public class ClientPacketHandler extends ServerPacketHandler {
 	@SubscribeEvent
 	public void onClientPacket(ClientCustomPacketEvent event) {
 		if (event.side() != Side.CLIENT) return;
-		boolean autoCreate = !Minecraft.getMinecraft().thePlayer.getEntityData().getBoolean(WaypointChatKeys.getNoAutoKey());
+		//boolean autoCreate = !Minecraft.getMinecraft().thePlayer.getEntityData().getBoolean(WaypointChatKeys.getNoAutoKey());
+		boolean autoCreate = !ConfigManager.disableAutoClick;
 		ByteBufInputStream bbis = new ByteBufInputStream(event.packet.payload());
 		try {
 			int type = bbis.readInt();

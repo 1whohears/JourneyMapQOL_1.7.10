@@ -16,6 +16,7 @@ import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import onewhohears.minecraft.jmapi.api.ApiWaypointManager;
 import onewhohears.minecraft.jmapi.command.WaypointCommand;
+import onewhohears.minecraft.jmapi.config.ConfigManager;
 import onewhohears.minecraft.jmapi.events.WaypointChatEvent;
 
 @Mod(modid = JourneyMapApiMod.MOD_ID, name = JourneyMapApiMod.MOD_NAME,
@@ -24,7 +25,7 @@ public class JourneyMapApiMod {
 	
 	public static final String MOD_ID = "journeymap_api_1.7.10";
 	public static final String MOD_NAME = "Journey Map Api for 1.7.10";
-	public static final String MOD_VERSION = "0.8.7";
+	public static final String MOD_VERSION = "0.8.8";
 	public static final String MOD_DEPENDENCIES = "journeymap";
 	
     public static Logger logger;
@@ -34,15 +35,14 @@ public class JourneyMapApiMod {
     public static CommonProxy proxy;
     
     public static FMLEventChannel Channel;
-    //public static FMLEventChannel ChannelPlayer;
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
         logger = event.getModLog();
         Channel = NetworkRegistry.INSTANCE.newEventDrivenChannel("JMA_Server");
-        //ChannelPlayer = NetworkRegistry.INSTANCE.newEventDrivenChannel("JMA_Player");
         proxy.load();
+        ConfigManager.init(event.getModConfigurationDirectory().toString()+"/");
     }
     
     @EventHandler

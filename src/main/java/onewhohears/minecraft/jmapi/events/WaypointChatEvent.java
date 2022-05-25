@@ -14,6 +14,7 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
+import onewhohears.minecraft.jmapi.config.ConfigManager;
 
 @SideOnly(Side.CLIENT)
 public class WaypointChatEvent {
@@ -23,7 +24,8 @@ public class WaypointChatEvent {
 	@SubscribeEvent
 	public void chatReceived(ClientChatReceivedEvent event) {
 		//System.out.println("Chat Recieved = "+event.message.getFormattedText());
-		autoCreate = !Minecraft.getMinecraft().thePlayer.getEntityData().getBoolean(WaypointChatKeys.getNoAutoKey());
+		//autoCreate = !Minecraft.getMinecraft().thePlayer.getEntityData().getBoolean(WaypointChatKeys.getNoAutoKey());
+		autoCreate = !ConfigManager.disableAutoClick;
 		ChatStyle style = event.message.getChatStyle();
 		if (style != null && style.getChatClickEvent() != null) {
 			if (style.getChatClickEvent() instanceof WaypointChatClickEvent) {

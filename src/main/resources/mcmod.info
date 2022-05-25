@@ -4,7 +4,7 @@
     "modid": "journeymap_api_1.7.10",
     "name": "Journey Map Api for 1.7.10",
     "description": "Added a few features from newer versions to journeymap 1.7.10. Includes waypoint sharing and formatted text.",
-    "version": "0.8.7",
+    "version": "0.8.8",
     "mcversion": "1.7.10",
     "url": "http://journeymap.info",
     "updateUrl": "",
