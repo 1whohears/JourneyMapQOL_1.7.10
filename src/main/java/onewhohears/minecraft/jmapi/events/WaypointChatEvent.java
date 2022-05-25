@@ -24,7 +24,6 @@ public class WaypointChatEvent {
 	@SubscribeEvent
 	public void chatReceived(ClientChatReceivedEvent event) {
 		//System.out.println("Chat Recieved = "+event.message.getFormattedText());
-		//autoCreate = !Minecraft.getMinecraft().thePlayer.getEntityData().getBoolean(WaypointChatKeys.getNoAutoKey());
 		autoCreate = !ConfigManager.disableAutoClick;
 		ChatStyle style = event.message.getChatStyle();
 		if (style != null && style.getChatClickEvent() != null) {

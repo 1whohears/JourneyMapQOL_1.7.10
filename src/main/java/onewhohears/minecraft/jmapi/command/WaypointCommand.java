@@ -1,17 +1,13 @@
 package onewhohears.minecraft.jmapi.command;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import io.netty.buffer.ByteBufOutputStream;
-import io.netty.buffer.Unpooled;
 import journeymap.client.model.Waypoint;
 import journeymap.client.waypoint.WaypointStore;
 import net.minecraft.client.Minecraft;
@@ -21,7 +17,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
-import onewhohears.minecraft.jmapi.JourneyMapApiMod;
+import onewhohears.minecraft.jmapi.api.ApiWaypointManager;
 import onewhohears.minecraft.jmapi.config.ConfigManager;
 
 @SideOnly(Side.CLIENT)
@@ -79,6 +75,7 @@ public class WaypointCommand extends CommandBase {
 
 	@Override
 	public void processCommand(ICommandSender sender, String[] args) {
+		// TODO share to team members
 		if (args[0].equals("cleardeath")) {
 			if (args.length == 1) {
 				Waypoint[] waypoints = WaypointStore.instance().getAll()
@@ -127,11 +124,9 @@ public class WaypointCommand extends CommandBase {
 			else sendMessage("There wasn't any Waypoints with prefix "+args[1]+" to be removed!");
 		} else if (args[0].equals("disableautoclick") && args.length == 2) {
 			if (args[1].equals("true")) {
-				//Minecraft.getMinecraft().thePlayer.getEntityData().setBoolean(WaypointChatKeys.getNoAutoKey(), true);
 				ConfigManager.disableAutoClick = true;
 				sendMessage("Waypoints in chat will NOT be clicked on!");
 			} else if (args[1].equals("false")) {
-				//Minecraft.getMinecraft().thePlayer.getEntityData().setBoolean(WaypointChatKeys.getNoAutoKey(), false);
 				ConfigManager.disableAutoClick = false;
 				sendMessage("Waypoints in chat will automatically be clicked on!");
 			} else sendError("You must input true or false!");
@@ -141,12 +136,9 @@ public class WaypointCommand extends CommandBase {
 			int l = args.length;
 			if (l == 2) {
 				Waypoint waypoint = getWaypointByName(args[1]);
-				FMLProxyPacket packet = createWaypointPacket(waypoint, dimension, displayName);
-				if (packet != null) {
-					JourneyMapApiMod.Channel.sendToServer(packet);
+				if (ApiWaypointManager.instance.shareAllPlayersWaypoint(waypoint, dimension, displayName, true)) {
 					sendMessage("Waypoint Sent!");
-				}
-				else sendError("Failed to find Waypoint");
+				} else sendError("Failed to find Waypoint");
 			} else if (l >= 3) {
 				String name = args[1], playerName = null;
 				if (l == 3 && args[1].charAt(0) != '"') {
@@ -166,14 +158,11 @@ public class WaypointCommand extends CommandBase {
 					return;
 				}
 				Waypoint waypoint = getWaypointByName(name);
-				FMLProxyPacket packet = null;
-				if (playerName == null) packet = createWaypointPacket(waypoint, dimension, displayName);
-				else                    packet = createWaypointPacket(waypoint, dimension, displayName, playerName);
-				if (packet != null) {
-					JourneyMapApiMod.Channel.sendToServer(packet);
+				if (playerName == null && ApiWaypointManager.instance.shareAllPlayersWaypoint(waypoint, dimension, displayName, true)) {
 					sendMessage("Waypoint Sent!");
-				}
-				else sendError("Failed to find Waypoint");
+				} else if (ApiWaypointManager.instance.shareWaypointToPlayer(waypoint, dimension, displayName, playerName, true)) {
+					sendMessage("Waypoint Sent!");
+				} else sendError("Failed to find Waypoint");
 			} else sendError("Invalid Command");
 		} else sendError("Invalid Command");
 	}
@@ -255,7 +244,7 @@ public class WaypointCommand extends CommandBase {
 				.toArray(new Waypoint[WaypointStore.instance().getAll().size()]);
 		ArrayList<String> n = new ArrayList<String>();
 		for (int i = 0; i < waypoints.length; ++i) {
-			if (!n.contains(waypoints[i].getName())) n.add(waypoints[i].getName());
+			if (!waypoints[i].isDeathPoint() && !n.contains(waypoints[i].getName())) n.add(waypoints[i].getName());
 		}
 		String[] names = n.toArray(new String[n.size()]);
 		for (int i = 0; i < names.length; ++i) if (names[i].contains(" ")) names[i] = '"'+names[i].substring(0, names[i].indexOf(" "));
@@ -285,53 +274,6 @@ public class WaypointCommand extends CommandBase {
 		}
 		String[] names = n2.toArray(new String[n2.size()]);
 		return names;
-	}
-	
-	private FMLProxyPacket createWaypointPacket(Waypoint waypoint, int dimension, String playerName) {
-		if (waypoint == null) return null;
-		ByteBufOutputStream bbos = new ByteBufOutputStream(Unpooled.buffer());
-		FMLProxyPacket thePacket = null;
-		try {
-			bbos.writeInt(0); //type
-			bbos.writeInt(waypoint.getX()); //x
-			bbos.writeInt(waypoint.getY()); //y
-			bbos.writeInt(waypoint.getZ()); //z
-			bbos.writeInt(dimension); //dimension
-			bbos.writeInt(waypoint.getColor()); //color
-			bbos.writeUTF(waypoint.getName()); //name
-			bbos.writeUTF(playerName); // player name
-			bbos.writeBoolean(false);
-			thePacket = new FMLProxyPacket(bbos.buffer(), "JMA_Server");
-			bbos.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-		return thePacket;
-	}
-	
-	private FMLProxyPacket createWaypointPacket(Waypoint waypoint, int dim, String pName, String otherName) {
-		if (waypoint == null) return null;
-		ByteBufOutputStream bbos = new ByteBufOutputStream(Unpooled.buffer());
-		FMLProxyPacket thePacket = null;
-		try {
-			bbos.writeInt(1); //type
-			bbos.writeUTF(otherName); // other player name
-			bbos.writeInt(waypoint.getX()); //x
-			bbos.writeInt(waypoint.getY()); //y
-			bbos.writeInt(waypoint.getZ()); //z
-			bbos.writeInt(dim); //dimension
-			bbos.writeInt(waypoint.getColor()); //color
-			bbos.writeUTF(waypoint.getName()); //name
-			bbos.writeUTF(pName); // player name
-			bbos.writeBoolean(false);
-			thePacket = new FMLProxyPacket(bbos.buffer(), "JMA_Server");
-			bbos.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-		return thePacket;
 	}
 	
 	private Waypoint getWaypointByName(String name) {
