@@ -6,6 +6,8 @@ import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
 import journeymap.client.model.Waypoint;
+import net.minecraft.client.Minecraft;
+import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.server.MinecraftServer;
 import onewhohears.minecraft.jmapi.JourneyMapApiMod;
 
@@ -172,6 +174,54 @@ public class ApiWaypointManager {
 	}
 	
 	/**
+	 * send a waypoint to all members of the sender's team
+	 * @param waypoint
+	 * @param dimension
+	 * @param delete
+	 * @param senderName
+	 * @param isFromClient is this method being called on the client or the server
+	 * @return if it was sent successfully
+	 */
+	public boolean shareWaypointToTeam(Waypoint waypoint, int dimension, boolean delete, 
+			String senderName, boolean isFromClient) {
+		ScorePlayerTeam team;
+		if (isFromClient) team = Minecraft.getMinecraft().theWorld.getScoreboard().getPlayersTeam(senderName);
+		else team = MinecraftServer.getServer().worldServers[dimension].getScoreboard().getPlayersTeam(senderName);
+		if (team == null) return false;
+		FMLProxyPacket packet = createShareTeamWaypointPacket(waypoint.getX(), waypoint.getY(), waypoint.getZ(), 
+				waypoint.getColor(), waypoint.getName(), dimension, delete, senderName, team.getRegisteredName());
+		if (packet == null) return false;
+		sendPacket(packet, isFromClient);
+		return true;
+	}
+	
+	/**
+	 * send a waypoint to all members of the sender's team
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param dimension
+	 * @param color
+	 * @param delete
+	 * @param waypointName
+	 * @param senderName
+	 * @param isFromClient is this method being called on the client or the server
+	 * @return if it was sent successfully
+	 */
+	public boolean shareWaypointToTeam(int x, int y, int z, int dimension, int color, boolean delete, 
+			String waypointName, String senderName, boolean isFromClient) {
+		ScorePlayerTeam team;
+		if (isFromClient) team = Minecraft.getMinecraft().theWorld.getScoreboard().getPlayersTeam(senderName);
+		else team = MinecraftServer.getServer().worldServers[dimension].getScoreboard().getPlayersTeam(senderName);
+		if (team == null) return false;
+		FMLProxyPacket packet = createShareTeamWaypointPacket(x, y, z, color, waypointName, dimension, delete, 
+				senderName, team.getRegisteredName());
+		if (packet == null) return false;
+		sendPacket(packet, isFromClient);
+		return true;
+	}
+	
+	/**
 	 * remove all waypoints with this name from all players
 	 * @param waypointName
 	 * @param showMessage notify players in chat that their waypoint was deleted
@@ -232,6 +282,31 @@ public class ApiWaypointManager {
 	private void sendPacket(FMLProxyPacket packet, boolean isFromClient) {
 		if (isFromClient) JourneyMapApiMod.Channel.sendToServer(packet);
 		else MinecraftServer.getServer().getConfigurationManager().sendPacketToAllPlayers(packet);
+	}
+	
+	private FMLProxyPacket createShareTeamWaypointPacket(int x, int y, int z, int color, String name, int dim, boolean delete, 
+			String playerName, String teamName) {
+		if (name == null) return null;
+		ByteBufOutputStream bbos = new ByteBufOutputStream(Unpooled.buffer());
+		FMLProxyPacket thePacket = null;
+		try {
+			bbos.writeInt(6); //type
+			bbos.writeInt(x); //x
+			bbos.writeInt(y); //y
+			bbos.writeInt(z); //z
+			bbos.writeInt(dim); //dimension
+			bbos.writeInt(color); //color
+			bbos.writeUTF(name); //name
+			bbos.writeUTF(playerName); // player name
+			bbos.writeUTF(teamName); // team Name
+			bbos.writeBoolean(delete); // delete
+			thePacket = new FMLProxyPacket(bbos.buffer(), "JMA_Server");
+			bbos.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return thePacket;
 	}
 	
 	private FMLProxyPacket createRemoveWaypointPacket(String playerName, String waypointName, boolean allPlayers, boolean showMessage) {

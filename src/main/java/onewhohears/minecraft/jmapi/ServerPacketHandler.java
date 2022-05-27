@@ -23,6 +23,7 @@ public class ServerPacketHandler {
 			// 3 = remove a player's waypoint by prefix
 			// 4 = remove all player's waypoint by name
 			// 5 = remove all player's waypoint by prefix
+			// 6 = share waypoint to team
 			switch (type) {
 				case 0 : 
 					MinecraftServer.getServer().getConfigurationManager().sendPacketToAllPlayers(event.packet);
@@ -40,6 +41,9 @@ public class ServerPacketHandler {
 					MinecraftServer.getServer().getConfigurationManager().sendPacketToAllPlayers(event.packet);
 					break;
 				case 5:
+					MinecraftServer.getServer().getConfigurationManager().sendPacketToAllPlayers(event.packet);
+					break;
+				case 6:
 					MinecraftServer.getServer().getConfigurationManager().sendPacketToAllPlayers(event.packet);
 					break;
 			}

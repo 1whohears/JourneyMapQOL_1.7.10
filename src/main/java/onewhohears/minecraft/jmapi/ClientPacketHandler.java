@@ -36,12 +36,12 @@ public class ClientPacketHandler extends ServerPacketHandler {
 			// 3 = remove a player's waypoint by prefix
 			// 4 = remove all player's waypoint by name
 			// 5 = remove all player's waypoint by prefix
+			// 6 = share waypoint to team
 			boolean delete, showMessage;
 			int x, y, z, dim, color;
-			String name, pName, oName, prefix;
+			String name, pName, oName, prefix, teamName;
 			Waypoint waypoint;
 			ChatComponentText chat; 
-			ChatStyle style;
 			switch (type) {
 			case 0 : 
 				x = bbis.readInt();
@@ -56,12 +56,7 @@ public class ClientPacketHandler extends ServerPacketHandler {
 				if (Minecraft.getMinecraft().thePlayer.getDisplayName().equals(pName)) break;
 				waypoint = new Waypoint(name, x, y, z, Color.YELLOW, Type.Normal, dim);
 				waypoint.setColor(color);
-				chat = new ChatComponentText("Waypoint "+name+" shared by "+pName);
-				style = new ChatStyle();
-				style.setColor(EnumChatFormatting.AQUA);
-				style.setUnderlined(true);
-				style.setChatClickEvent(new WaypointChatClickEvent(null, "", waypoint, delete));
-				chat.setChatStyle(style);
+				chat = getWaypointChat("Waypoint "+name+" shared by "+pName, waypoint, delete);
 				Minecraft.getMinecraft().thePlayer.addChatComponentMessage(chat);
 				if (autoCreate) createWayPoint(waypoint, delete);
 				break;
@@ -79,12 +74,7 @@ public class ClientPacketHandler extends ServerPacketHandler {
 					delete = bbis.readBoolean();
 					waypoint = new Waypoint(name, x, y, z, Color.YELLOW, Type.Normal, dim);
 					waypoint.setColor(color);
-					chat = new ChatComponentText(pName+" shared waypoint "+name+" with you!");
-					style = new ChatStyle();
-					style.setColor(EnumChatFormatting.AQUA);
-					style.setUnderlined(true);
-					style.setChatClickEvent(new WaypointChatClickEvent(null, "", waypoint, delete));
-					chat.setChatStyle(style);
+					chat = getWaypointChat(pName+" shared waypoint "+name+" with you!", waypoint, delete);
 					Minecraft.getMinecraft().thePlayer.addChatComponentMessage(chat);
 					if (autoCreate) createWayPoint(waypoint, delete);
 				}
@@ -115,11 +105,40 @@ public class ClientPacketHandler extends ServerPacketHandler {
 				showMessage = bbis.readBoolean();
 				if (deleteWaypointsWithPrefix(prefix) && showMessage) sendDeletePrefixMessage(prefix);
 				break;
+			case 6 :
+				x = bbis.readInt();
+				y = bbis.readInt();
+				z = bbis.readInt();
+				dim = bbis.readInt();
+				color = bbis.readInt();
+				name = bbis.readUTF();
+				pName = bbis.readUTF();
+				teamName = bbis.readUTF();
+				delete = bbis.readBoolean();
+				if (Minecraft.getMinecraft().thePlayer.getDisplayName().equals(pName)) break;
+				if (Minecraft.getMinecraft().thePlayer.getTeam().getRegisteredName().equals(teamName)) {
+					waypoint = new Waypoint(name, x, y, z, Color.YELLOW, Type.Normal, dim);
+					waypoint.setColor(color);
+					chat = getWaypointChat("Team member "+pName+" shared waypoint "+name+" with you!", waypoint, delete);
+					Minecraft.getMinecraft().thePlayer.addChatComponentMessage(chat);
+					if (autoCreate) createWayPoint(waypoint, delete);
+				}
+				break;
 			}
 			bbis.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private ChatComponentText getWaypointChat(String message, Waypoint waypoint, boolean delete) {
+		ChatComponentText chat = new ChatComponentText(message);
+		ChatStyle style = new ChatStyle();
+		style.setColor(EnumChatFormatting.AQUA);
+		style.setUnderlined(true);
+		style.setChatClickEvent(new WaypointChatClickEvent(null, "", waypoint, delete));
+		chat.setChatStyle(style);
+		return chat;
 	}
 	
 	private void sendDeleteMessage(String waypointName) {

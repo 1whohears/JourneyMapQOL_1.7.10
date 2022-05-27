@@ -45,7 +45,7 @@ public class WaypointCommand extends CommandBase {
 	public List addTabCompletionOptions(ICommandSender sender, String[] args) {
 		if (args.length == 1) {
 			return CommandBase.getListOfStringsMatchingLastWord(args, new String[] 
-					 {"cleardeath", "share", "remove", "removeprefix","disableautoclick"}); 
+					 {"cleardeath","share","shareteam","remove","removeprefix","disableautoclick"}); 
 		} else if (args.length == 2) {
 			if (args[0].equals("remove") || args[0].equals("share")) {
 				return CommandBase.getListOfStringsMatchingLastWord(args, getWaypointNames()); 
@@ -130,7 +130,7 @@ public class WaypointCommand extends CommandBase {
 				ConfigManager.disableAutoClick = false;
 				sendMessage("Waypoints in chat will automatically be clicked on!");
 			} else sendError("You must input true or false!");
-		} else if (args[0].equals("share")) {
+		} else if (args[0].equals("share") || args[0].equals("shareteam")) {
 			int dimension = Minecraft.getMinecraft().thePlayer.dimension;
 			String displayName = Minecraft.getMinecraft().thePlayer.getDisplayName();
 			int l = args.length;
@@ -158,9 +158,14 @@ public class WaypointCommand extends CommandBase {
 					return;
 				}
 				Waypoint waypoint = getWaypointByName(name);
-				if (playerName == null && ApiWaypointManager.instance.shareAllPlayersWaypoint(waypoint, dimension, displayName, true)) {
+				if (playerName == null 
+						&& ApiWaypointManager.instance.shareAllPlayersWaypoint(waypoint, dimension, displayName, true)) {
 					sendMessage("Waypoint Sent!");
-				} else if (ApiWaypointManager.instance.shareWaypointToPlayer(waypoint, dimension, displayName, playerName, true)) {
+				} else if (playerName != null && args[0].equals("share") 
+						&& ApiWaypointManager.instance.shareWaypointToPlayer(waypoint, dimension, displayName, playerName, true)) {
+					sendMessage("Waypoint Sent!");
+				} else if (playerName == null && args[0].equals("shareteam")
+						&& ApiWaypointManager.instance.shareWaypointToTeam(waypoint, dimension, false, playerName, true)) {
 					sendMessage("Waypoint Sent!");
 				} else sendError("Failed to find Waypoint");
 			} else sendError("Invalid Command");
