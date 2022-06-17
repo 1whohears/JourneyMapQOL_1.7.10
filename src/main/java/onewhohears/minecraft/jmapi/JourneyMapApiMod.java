@@ -2,6 +2,7 @@ package onewhohears.minecraft.jmapi;
 
 import org.apache.logging.log4j.Logger;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.SidedProxy;
@@ -43,6 +44,7 @@ public class JourneyMapApiMod {
         Channel = NetworkRegistry.INSTANCE.newEventDrivenChannel("JMA_Server");
         proxy.load();
         ConfigManager.init(event.getModConfigurationDirectory().toString()+"/");
+        FMLCommonHandler.instance().bus().register(new ConfigManager());
     }
     
     @EventHandler
