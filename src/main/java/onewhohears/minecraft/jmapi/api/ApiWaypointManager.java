@@ -13,10 +13,11 @@ import onewhohears.minecraft.jmapi.JourneyMapApiMod;
 
 public class ApiWaypointManager {
 	
-	public static ApiWaypointManager instance;
+	private static ApiWaypointManager instance;
 	
-	public ApiWaypointManager() {
-		instance = this;
+	public static ApiWaypointManager getInstance() {
+		if (instance == null) instance = new ApiWaypointManager();
+		return instance;
 	}
 	
 	/**

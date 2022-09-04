@@ -136,7 +136,7 @@ public class WaypointCommand extends CommandBase {
 			int l = args.length;
 			if (l == 2) {
 				Waypoint waypoint = getWaypointByName(args[1]);
-				if (ApiWaypointManager.instance.shareAllPlayersWaypoint(waypoint, dimension, displayName, true)) {
+				if (ApiWaypointManager.getInstance().shareAllPlayersWaypoint(waypoint, dimension, displayName, true)) {
 					sendMessage("Waypoint Sent!");
 				} else sendError("Failed to find Waypoint");
 			} else if (l >= 3) {
@@ -159,13 +159,13 @@ public class WaypointCommand extends CommandBase {
 				}
 				Waypoint waypoint = getWaypointByName(name);
 				if (playerName == null 
-						&& ApiWaypointManager.instance.shareAllPlayersWaypoint(waypoint, dimension, displayName, true)) {
+						&& ApiWaypointManager.getInstance().shareAllPlayersWaypoint(waypoint, dimension, displayName, true)) {
 					sendMessage("Waypoint Sent!");
 				} else if (playerName != null && args[0].equals("share") 
-						&& ApiWaypointManager.instance.shareWaypointToPlayer(waypoint, dimension, displayName, playerName, true)) {
+						&& ApiWaypointManager.getInstance().shareWaypointToPlayer(waypoint, dimension, displayName, playerName, true)) {
 					sendMessage("Waypoint Sent!");
 				} else if (playerName == null && args[0].equals("shareteam")
-						&& ApiWaypointManager.instance.shareWaypointToTeam(waypoint, dimension, false, playerName, true)) {
+						&& ApiWaypointManager.getInstance().shareWaypointToTeam(waypoint, dimension, false, playerName, true)) {
 					sendMessage("Waypoint Sent!");
 				} else sendError("Failed to find Waypoint");
 			} else sendError("Invalid Command");

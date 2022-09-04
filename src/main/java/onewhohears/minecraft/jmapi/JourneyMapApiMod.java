@@ -8,14 +8,11 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.event.FMLServerStartedEvent;
-import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.network.FMLEventChannel;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.relauncher.Side;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
-import onewhohears.minecraft.jmapi.api.ApiWaypointManager;
 import onewhohears.minecraft.jmapi.command.WaypointCommand;
 import onewhohears.minecraft.jmapi.config.ConfigManager;
 import onewhohears.minecraft.jmapi.events.WaypointChatEvent;
@@ -54,16 +51,6 @@ public class JourneyMapApiMod {
     		MinecraftForge.EVENT_BUS.register(new WaypointChatEvent());
         	ClientCommandHandler.instance.registerCommand(new WaypointCommand());
     	}
-    }
-    
-    @EventHandler
-    public void started(FMLServerStartedEvent event) {
-    	ApiWaypointManager.instance = new ApiWaypointManager();
-    }
-    
-    @EventHandler
-    public void stopped(FMLServerStoppedEvent event) {
-    	ApiWaypointManager.instance = null;
     }
 	
 }
