@@ -75,7 +75,6 @@ public class WaypointCommand extends CommandBase {
 
 	@Override
 	public void processCommand(ICommandSender sender, String[] args) {
-		// TODO share to team members
 		if (args[0].equals("cleardeath")) {
 			if (args.length == 1) {
 				Waypoint[] waypoints = WaypointStore.instance().getAll()
