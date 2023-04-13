@@ -24,7 +24,6 @@ public class ClientPacketHandler extends ServerPacketHandler {
 	@SubscribeEvent
 	public void onClientPacket(ClientCustomPacketEvent event) {
 		if (event.side() != Side.CLIENT) return;
-		//boolean autoCreate = !Minecraft.getMinecraft().thePlayer.getEntityData().getBoolean(WaypointChatKeys.getNoAutoKey());
 		boolean autoCreate = !ConfigManager.disableAutoClick;
 		ByteBufInputStream bbis = new ByteBufInputStream(event.packet.payload());
 		try {
