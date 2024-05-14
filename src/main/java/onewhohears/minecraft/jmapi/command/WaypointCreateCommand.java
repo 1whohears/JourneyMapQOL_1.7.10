@@ -86,7 +86,7 @@ public class WaypointCreateCommand extends CommandBase {
 	
 	@Override
 	public String getCommandUsage(ICommandSender sender) {
-		return "/"+CMD_NAME+" [@s/@a/@p/@t:team_name/player_name] [name] [x] [y] [z] <color> <dimension> <delete_dups>";
+		return "/"+CMD_NAME+" <@s/@a/@p/@t:team_name/player_name> <name> <x> <y> <z> [color] [dimension] [delete_dups]";
 	}
 	
 	@SuppressWarnings("rawtypes")
