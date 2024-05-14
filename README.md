@@ -13,6 +13,9 @@ You can disable the auto click feature with the command and manually click on wa
 
 The ApiWaypointManager class has some functions that handle the packets for sharing and removing waypoints.
 ## Commands
+### `/waypoint`
+This command only works on the client side. Doesn't work on command blocks or custom npcs. See `/wpcreate`
+
 `/waypoint share <waypoint name> [player name]`
 
 `/waypoint cleardeath [number of recent death points to save]`
@@ -22,6 +25,12 @@ The ApiWaypointManager class has some functions that handle the packets for shar
 `/waypoint removeprefix <prefix name>`
 
 `/waypoint disableautoclick (true/false)`
+
+### `/wpcreate`
+This command works on both server and client side. It can be used to create waypoints with command blocks. See **Formatted Text** for a description of each parameter. 
+
+`/wpcreate <@s/@a/@p/@t:team_name/player_name> <name> <x> <y> <z> [color] [dim] [delete]`
+
 ## Formatted Text
 A waypoint in chat must be enclosed by square brackets. Parameters are split by "," and defining a parameter uses ":"
 ### Parameters: `name` (type | description | default)
