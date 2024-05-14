@@ -8,16 +8,16 @@ import net.minecraft.event.ClickEvent;
 
 public class WaypointChatClickEvent extends ClickEvent {
 	
-	private Waypoint waypoint;
+	private final Waypoint waypoint;
+	private final boolean delete;
 	private boolean ran;
-	private boolean delete;
 	
 	@SideOnly(Side.CLIENT)
-	public WaypointChatClickEvent(Action action, String value, Waypoint waypoint, boolean delete) {
+	public WaypointChatClickEvent(Waypoint waypoint, boolean delete) {
 		super(null, "");
 		this.waypoint = waypoint;
-		ran = false;
 		this.delete = delete;
+		this.ran = false;
 	}
 	
 	@Override
@@ -31,6 +31,7 @@ public class WaypointChatClickEvent extends ClickEvent {
 	
 	private void createWayPoint() {
 		if (delete) deleteWaypointsWithSameName();
+		System.out.println("waypoint click "+waypoint.toString());
 		WaypointStore.instance().save(waypoint);
 	}
 	

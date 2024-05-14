@@ -38,7 +38,7 @@ public class ClientPacketHandler extends ServerPacketHandler {
 			// 6 = share waypoint to team
 			boolean delete, showMessage;
 			int x, y, z, dim, color;
-			String name, pName, oName, prefix, teamName;
+			String name, pName, oName, prefix, teamName, text;
 			Waypoint waypoint;
 			ChatComponentText chat; 
 			switch (type) {
@@ -55,7 +55,9 @@ public class ClientPacketHandler extends ServerPacketHandler {
 				if (Minecraft.getMinecraft().thePlayer.getDisplayName().equals(pName)) break;
 				waypoint = new Waypoint(name, x, y, z, Color.YELLOW, Type.Normal, dim);
 				waypoint.setColor(color);
-				chat = getWaypointChat("Waypoint "+name+" shared by "+pName, waypoint, delete);
+				if (!pName.equals("")) text = "Waypoint "+name+" shared by "+pName;
+				else text = "Recieved Waypoint "+name;
+				chat = getWaypointChat(text, waypoint, delete);
 				Minecraft.getMinecraft().thePlayer.addChatComponentMessage(chat);
 				if (autoCreate) createWayPoint(waypoint, delete);
 				break;
@@ -73,7 +75,9 @@ public class ClientPacketHandler extends ServerPacketHandler {
 					delete = bbis.readBoolean();
 					waypoint = new Waypoint(name, x, y, z, Color.YELLOW, Type.Normal, dim);
 					waypoint.setColor(color);
-					chat = getWaypointChat(pName+" shared waypoint "+name+" with you!", waypoint, delete);
+					if (!pName.equals("")) text = pName+" shared waypoint "+name+" with you!";
+					else text = "Recieved Waypoint "+name;
+					chat = getWaypointChat(text, waypoint, delete);
 					Minecraft.getMinecraft().thePlayer.addChatComponentMessage(chat);
 					if (autoCreate) createWayPoint(waypoint, delete);
 				}
@@ -118,7 +122,9 @@ public class ClientPacketHandler extends ServerPacketHandler {
 				if (Minecraft.getMinecraft().thePlayer.getTeam().getRegisteredName().equals(teamName)) {
 					waypoint = new Waypoint(name, x, y, z, Color.YELLOW, Type.Normal, dim);
 					waypoint.setColor(color);
-					chat = getWaypointChat("Team member "+pName+" shared waypoint "+name+" with you!", waypoint, delete);
+					if (!pName.equals("")) text = "Team member "+pName+" shared waypoint "+name+" with you!";
+					else text = "Your Team Recieved Waypoint "+name;
+					chat = getWaypointChat(text, waypoint, delete);
 					Minecraft.getMinecraft().thePlayer.addChatComponentMessage(chat);
 					if (autoCreate) createWayPoint(waypoint, delete);
 				}
@@ -135,7 +141,7 @@ public class ClientPacketHandler extends ServerPacketHandler {
 		ChatStyle style = new ChatStyle();
 		style.setColor(EnumChatFormatting.AQUA);
 		style.setUnderlined(true);
-		style.setChatClickEvent(new WaypointChatClickEvent(null, "", waypoint, delete));
+		style.setChatClickEvent(new WaypointChatClickEvent(waypoint, delete));
 		chat.setChatStyle(style);
 		return chat;
 	}

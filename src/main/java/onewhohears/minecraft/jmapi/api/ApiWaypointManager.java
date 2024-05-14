@@ -209,11 +209,37 @@ public class ApiWaypointManager {
 	 * @param isFromClient is this method being called on the client or the server
 	 * @return if it was sent successfully
 	 */
-	public boolean shareWaypointToTeam(int x, int y, int z, int dimension, int color, boolean delete, 
+	public boolean shareWaypointToPlayerTeam(int x, int y, int z, int dimension, int color, boolean delete, 
 			String waypointName, String senderName, boolean isFromClient) {
 		ScorePlayerTeam team;
 		if (isFromClient) team = Minecraft.getMinecraft().theWorld.getScoreboard().getPlayersTeam(senderName);
 		else team = MinecraftServer.getServer().worldServers[dimension].getScoreboard().getPlayersTeam(senderName);
+		if (team == null) return false;
+		FMLProxyPacket packet = createShareTeamWaypointPacket(x, y, z, color, waypointName, dimension, delete, 
+				senderName, team.getRegisteredName());
+		if (packet == null) return false;
+		sendPacket(packet, isFromClient);
+		return true;
+	}
+	
+	/**
+	 * send a waypoint to all members of a team
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param dimension
+	 * @param color
+	 * @param delete
+	 * @param waypointName
+	 * @param teamName
+	 * @param isFromClient is this method being called on the client or the server
+	 * @return if it was sent successfully
+	 */
+	public boolean shareWaypointToTeam(int x, int y, int z, int dimension, int color, boolean delete, 
+			String waypointName, String senderName, String teamName, boolean isFromClient) {
+		ScorePlayerTeam team;
+		if (isFromClient) team = Minecraft.getMinecraft().theWorld.getScoreboard().getTeam(teamName);
+		else team = MinecraftServer.getServer().worldServers[dimension].getScoreboard().getTeam(teamName);
 		if (team == null) return false;
 		FMLProxyPacket packet = createShareTeamWaypointPacket(x, y, z, color, waypointName, dimension, delete, 
 				senderName, team.getRegisteredName());
@@ -414,4 +440,6 @@ public class ApiWaypointManager {
 		w += "]";
 		return w;
 	}
+	
+	
 }

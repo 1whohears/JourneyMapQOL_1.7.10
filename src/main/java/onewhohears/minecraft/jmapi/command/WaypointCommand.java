@@ -14,25 +14,27 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiPlayerInfo;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
 import onewhohears.minecraft.jmapi.api.ApiWaypointManager;
 import onewhohears.minecraft.jmapi.config.ConfigManager;
+import onewhohears.minecraft.jmapi.util.UtilCommand;
 
 @SideOnly(Side.CLIENT)
 public class WaypointCommand extends CommandBase {
 	
-	private String cmdName = "waypoint";
+	private static final String CMD_NAME = "waypoint";
 	
 	@Override
 	public String getCommandName() {
-		return cmdName;
+		return CMD_NAME;
 	}
 	
 	@Override
 	public String getCommandUsage(ICommandSender sender) {
-		return "/"+cmdName+" cleardeath/remove/share/disableautoclick";
+		return "/"+CMD_NAME+" cleardeath/remove/share/disableautoclick";
 	}
 	
 	@Override
@@ -75,6 +77,10 @@ public class WaypointCommand extends CommandBase {
 
 	@Override
 	public void processCommand(ICommandSender sender, String[] args) {
+		if (!sender.getEntityWorld().isRemote) {
+			sendError("This command only works on the client side!");
+			return;
+		}
 		if (args[0].equals("cleardeath")) {
 			if (args.length == 1) {
 				Waypoint[] waypoints = WaypointStore.instance().getAll()
@@ -157,16 +163,23 @@ public class WaypointCommand extends CommandBase {
 					return;
 				}
 				Waypoint waypoint = getWaypointByName(name);
-				if (playerName == null 
-						&& ApiWaypointManager.getInstance().shareAllPlayersWaypoint(waypoint, dimension, displayName, true)) {
-					sendMessage("Waypoint Sent!");
-				} else if (playerName != null && args[0].equals("share") 
-						&& ApiWaypointManager.getInstance().shareWaypointToPlayer(waypoint, dimension, displayName, playerName, true)) {
-					sendMessage("Waypoint Sent!");
-				} else if (playerName == null && args[0].equals("shareteam")
-						&& ApiWaypointManager.getInstance().shareWaypointToTeam(waypoint, dimension, false, playerName, true)) {
-					sendMessage("Waypoint Sent!");
-				} else sendError("Failed to find Waypoint");
+				boolean good = false;
+				if (playerName == null || (playerName != null && playerName.equals("@a"))) {
+					good = ApiWaypointManager.getInstance().shareAllPlayersWaypoint(waypoint, dimension, displayName, true);
+				} else {
+					if (args[0].equals("share")) {
+						if (playerName.equals("@p")) {
+							EntityPlayer ep = UtilCommand.getNearestNonSenderPlayer(sender);
+							good = ApiWaypointManager.getInstance().shareWaypointToPlayer(waypoint, dimension, displayName, ep.getDisplayName(), true);
+						} else {
+							good = ApiWaypointManager.getInstance().shareWaypointToPlayer(waypoint, dimension, displayName, playerName, true);
+						}
+					} else if (args[0].equals("shareteam")) {
+						good = ApiWaypointManager.getInstance().shareWaypointToTeam(waypoint, dimension, false, playerName, true);
+					}
+				}
+				if (good) sendMessage("Waypoint Sent!");
+				else sendError("Failed to find Waypoint");
 			} else sendError("Invalid Command");
 		} else sendError("Invalid Command");
 	}

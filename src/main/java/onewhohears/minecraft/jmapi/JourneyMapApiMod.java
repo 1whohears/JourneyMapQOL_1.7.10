@@ -8,12 +8,14 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.network.FMLEventChannel;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.relauncher.Side;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import onewhohears.minecraft.jmapi.command.WaypointCommand;
+import onewhohears.minecraft.jmapi.command.WaypointCreateCommand;
 import onewhohears.minecraft.jmapi.config.ConfigManager;
 import onewhohears.minecraft.jmapi.events.WaypointChatEvent;
 
@@ -23,7 +25,7 @@ public class JourneyMapApiMod {
 	
 	public static final String MOD_ID = "journeymap_api_1.7.10";
 	public static final String MOD_NAME = "Journey Map Api for 1.7.10";
-	public static final String MOD_VERSION = "1.0.0";
+	public static final String MOD_VERSION = "1.1.0";
 	public static final String MOD_DEPENDENCIES = "journeymap";
 	
     public static Logger logger;
@@ -50,7 +52,12 @@ public class JourneyMapApiMod {
     	if (event.getSide() == Side.CLIENT) {
     		MinecraftForge.EVENT_BUS.register(new WaypointChatEvent());
         	ClientCommandHandler.instance.registerCommand(new WaypointCommand());
-    	}
+    	} 
+    }
+    
+    @EventHandler
+    public void start(FMLServerStartingEvent event) {
+    	event.registerServerCommand(new WaypointCreateCommand());
     }
 	
 }
