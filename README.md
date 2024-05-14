@@ -16,7 +16,7 @@ The ApiWaypointManager class has some functions that handle the packets for shar
 ### `/waypoint`
 This command only works on the client side. Doesn't work on command blocks or custom npcs. See `/wpcreate`
 
-`/waypoint share <waypoint name> [player name]`
+`/waypoint share <waypoint name> [player_name/@a/@p]`
 
 `/waypoint cleardeath [number of recent death points to save]`
 
